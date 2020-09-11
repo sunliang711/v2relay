@@ -3,8 +3,8 @@ rpath="$(readlink ${BASH_SOURCE})"
 if [ -z "$rpath" ];then
     rpath=${BASH_SOURCE}
 fi
-thisDir="$(cd $(dirname $rpath) && pwd)"
-cd "$thisDir"
+this="$(cd $(dirname $rpath) && pwd)"
+cd "$this"
 
 user="${SUDO_USER:-$(whoami)}"
 home="$(eval echo ~$user)"
@@ -58,13 +58,18 @@ function runAsRoot(){
 install(){
     cat msg
     bash download.sh || { echo "Download v2ray failed!"; exit 1; }
-    sed -e "s|V2RAY|${thisDir}/Linux/v2ray|g" \
-        -e "s|CONFIG|${thisDir}/etc/config.json|g" \
-        -e "s|PRE|${thisDir}/bin/port.sh addChain|g"  v2relay.service > /tmp/v2relay.service
+    sed -e "s|V2RAY|${this}/Linux/v2ray|g" \
+        -e "s|CONFIG|${this}/etc/config.json|g" \
+        -e "s|PRE|${this}/bin/port.sh addChain|g"  v2relay.service > /tmp/v2relay.service
 
     runAsRoot "mv /tmp/v2relay.service /etc/systemd/system/v2relay.service"
     echo "systemd service v2relay has been installed."
-    echo "add ${thisDir}/bin to PATH manually"
+
+    echo "add crontab job"
+    (crontab -l 2>/dev/null;echo "0 * * * * $this/bin/port.sh saveHour") | crontab -
+    (crontab -l 2>/dev/null;echo "59 23 * * * $this/bin/port.sh saveDay") | crontab -
+
+    echo "add ${this}/bin to PATH manually"
 }
 
 uninstall(){
