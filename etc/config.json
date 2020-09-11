@@ -1,0 +1,197 @@
+{
+    "log": {
+        "access": "/tmp/v2relay.log",
+        "error": "/tmp/v2relay.log",
+        "loglevel": "warning"
+    },
+    "inbounds": [
+	{
+	      "port": 8022,
+	      "protocol": "vmess",
+	      "settings": {
+		"clients": [
+		  {
+		    "id": "e2791dbb-f340-4a71-998a-da3b184a1cef",
+		    "alterId": 64
+		  }
+		]
+	      },
+	      "streamSettings": {
+		"network":"ws"
+	      }
+        },
+        {
+            "tag": "http",
+            "protocol": "http",
+            "port": 8021,
+            "settings": {
+                "accounts": [
+                    {
+                        "user": "user",
+                        "pass": "usernopass"
+                    },
+                    {
+                        "user": "user2",
+                        "pass": "user2nopass"
+                    }
+                ],
+                "timeout": 0,
+                "userLevel": 0,
+                "allowTransparent": false
+            },
+            "sniffing": {
+                "enabled": true,
+                "destOverride": [
+                    "http",
+                    "tls"
+                ]
+            }
+        },
+        {
+            "tag": "socks5",
+            "protocol": "socks",
+            "port": 8020,
+            "settings": {
+                "auth": "password",
+                "accounts": [
+                    {
+                        "user": "user",
+                        "pass": "usernopass"
+                    },
+                    {
+                        "user": "user2",
+                        "pass": "user2nopass"
+                    }
+                ],
+                "userLevel": 0,
+                "ip": "0.0.0.0",
+                "udp": true
+            },
+            "sniffing": {
+                "enabled": true,
+                "destOverride": [
+                    "http",
+                    "tls"
+                ]
+            }
+        },
+        {
+            "tag": "shadowsocks1",
+            "protocol": "shadowsocks",
+            "port": 8000,
+            "settings": {
+                "method": "aes-256-cfb",
+                "password": "8000",
+                "udp": true,
+                "level": 0,
+                "ota": false
+            }
+        },
+        {
+            "tag": "shadowsocks2",
+            "protocol": "shadowsocks",
+            "port": 8001,
+            "settings": {
+                "method": "aes-256-cfb",
+                "password": "8001b",
+                "udp": true,
+                "level": 0,
+                "ota": false
+            }
+        },
+        {
+            "tag": "shadowsocks3",
+            "protocol": "shadowsocks",
+            "user": "chuan",
+            "port": 8002,
+            "settings": {
+                "method": "aes-256-cfb",
+                "password": "8002",
+                "udp": true,
+                "level": 0,
+                "ota": false
+            }
+        },
+        {
+            "tag": "shadowsocks4",
+            "protocol": "shadowsocks",
+            "user": "xiaci",
+            "port": 8003,
+            "settings": {
+                "method": "aes-256-cfb",
+                "password": "aaxc8003!!",
+                "udp": true,
+                "level": 0,
+                "ota": false
+            }
+        },
+        {
+            "tag": "shadowsocks5",
+            "protocol": "shadowsocks",
+            "user": "xiangge",
+            "port": 8004,
+            "settings": {
+                "method": "aes-256-cfb",
+                "password": "8004d",
+                "udp": true,
+                "level": 0,
+                "ota": false
+            }
+        },
+        {
+            "tag": "shadowsocks6",
+            "protocol": "shadowsocks",
+            "user": "me",
+            "port": 8005,
+            "settings": {
+                "method": "aes-256-cfb",
+                "password": "8005e",
+                "udp": true,
+                "level": 0,
+                "ota": false
+            }
+        },
+        {
+            "tag": "shadowsocks7",
+            "protocol": "shadowsocks",
+            "user": "wei",
+            "port": 8006,
+            "settings": {
+                "method": "aes-256-cfb",
+                "password": "8006f",
+                "udp": true,
+                "level": 0,
+                "ota": false
+            }
+        },
+        {
+            "tag": "shadowsocks8",
+            "protocol": "shadowsocks",
+            "user": "",
+            "port": 8007,
+            "settings": {
+                "method": "aes-256-cfb",
+                "password": "8007g",
+                "udp": true,
+                "level": 0,
+                "ota": false
+            }
+        }
+    ],
+  "outbound": {
+    "protocol":"socks",
+    "settings":{
+        "servers": [
+            {
+            "address": "10.1.1.112",
+            "port": 1281,
+            "users": [{
+                "user": "user",
+                "pass": "usernopass",
+                "level": 0
+              }]
+            }
+        ]
+    }
+  }
+}
