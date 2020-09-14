@@ -66,8 +66,8 @@ install(){
     echo "systemd service v2relay has been installed."
 
     echo "add crontab job"
-    (crontab -l 2>/dev/null;echo "0 * * * * $this/bin/port.sh saveHour") | crontab -
-    (crontab -l 2>/dev/null;echo "59 23 * * * $this/bin/port.sh saveDay") | crontab -
+    (crontab -l 2>/dev/null;echo "0 * * * * ${this}/bin/port.sh saveHour") | crontab -
+    (crontab -l 2>/dev/null;echo "59 23 * * * ${this}/bin/port.sh saveDay") | crontab -
 
     echo "add ${this}/bin to PATH manually"
 }
