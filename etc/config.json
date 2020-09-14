@@ -76,18 +76,6 @@
             }
         },
         {
-            "tag": "shadowsocks1",
-            "protocol": "shadowsocks",
-            "port": 8000,
-            "settings": {
-                "method": "aes-256-cfb",
-                "password": "8000",
-                "udp": true,
-                "level": 0,
-                "ota": false
-            }
-        },
-        {
             "tag": "shadowsocks2",
             "protocol": "shadowsocks",
             "port": 8001,
