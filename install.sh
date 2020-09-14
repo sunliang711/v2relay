@@ -61,7 +61,7 @@ install(){
     bash download.sh || { echo "Download v2ray failed!"; exit 1; }
     sed -e "s|V2RAY|${this}/Linux/v2ray|g" \
         -e "s|CONFIG|${this}/etc/config.json|g" \
-        -e "s|PRE|${this}/bin/port.sh addChain|g"  v2relay.service > /tmp/v2relay.service
+        -e "s|PRE|${this}/bin/port.sh addChain|g"  daemon/v2relay.service > /tmp/v2relay.service
 
     runAsRoot "mv /tmp/v2relay.service /etc/systemd/system/v2relay.service"
     echo "systemd service v2relay has been installed."
