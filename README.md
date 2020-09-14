@@ -12,3 +12,5 @@
 ## bin/v2relay.sh
     管理服务启停、配置的脚本；
 
+## lede_install.sh
+    在koolshare lede上的安装脚本
