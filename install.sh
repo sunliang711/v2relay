@@ -67,6 +67,7 @@ install(){
     echo "systemd service v2relay has been installed."
 
     echo "add crontab job"
+    echo "Note: please enable no password to run sudo if you are not root"
     (crontab -l 2>/dev/null;echo "0 * * * * ${this}/bin/port.sh saveHour") | crontab -
     (crontab -l 2>/dev/null;echo "59 23 * * * ${this}/bin/port.sh saveDay") | crontab -
 
