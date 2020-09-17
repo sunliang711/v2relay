@@ -6,6 +6,8 @@ fi
 thisDir="$(cd $(dirname $rpath) && pwd)"
 cd "$thisDir"
 
+export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
 user="${SUDO_USER:-$(whoami)}"
 home="$(eval echo ~$user)"
 
