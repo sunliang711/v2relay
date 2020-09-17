@@ -175,6 +175,18 @@ saveHour(){
     (date +%FT%T;show) >> $dest/$filename
 }
 
+em(){
+    editor=vi
+    if command -v vim >/dev/null 2>&1;then
+        editor=vim
+    fi
+    if command -v nvim >/dev/null 2>&1;then
+        editor=nvim
+    fi
+
+    $editor ${BASH_SOURCE}
+}
+
 
 
 ###############################################################################
