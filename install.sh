@@ -96,8 +96,10 @@ _build(){
     cd /tmp
     if [ ! -d fetchSubscription ];then
         git clone https://gitee.com/sunliang711/fetchSubscription || { echo "clone fetchSubscription error "; exit 1; }
+    else
+        echo "use /tmp/fetchSubscription cache"
     fi
-    cd fetchSubscription && bash ./build.sh build && cp fetch v2ray.tmpl ${this}/bin
+    cd fetchSubscription && git pull && bash ./build.sh build && cp fetch  ${this}/bin && cp v2ray.tmpl ${this}/etc
     cd ${this}
 }
 

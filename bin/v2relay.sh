@@ -107,7 +107,7 @@ backendConfig=backend.json
 subURLFile=${this}/../etc/sub.txt
 fetchSub(){
     cd ${this}
-    ./fetch -o ${this}/../etc/${backendConfig} -u $(cat ${subURLFile})
+    ./fetch -o ${this}/../etc/${backendConfig} -t ${this}/../etc/v2ray.tmpl -u $(cat ${subURLFile})
 }
 
 _need(){
@@ -132,7 +132,7 @@ selectBest(){
     fi
 
     time=/usr/bin/time
-    local result=times
+    local result=/tmp/best-times
     local tmpFile=/tmp/best.tmp
 
     echo -n >${result}
@@ -157,6 +157,8 @@ selectBest(){
         exit 1
     fi
     echo "best port: ${bestPort}"
+
+    # /bin/rm -rf ${result}
 
     local virtualPort=$(_virtualPort)
 
