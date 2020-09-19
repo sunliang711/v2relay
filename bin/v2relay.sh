@@ -139,7 +139,7 @@ selectBest(){
     for port in ${backPorts//,/ };do
         echo -n "$(date +%FT%T) test port: $port..."
         echo -n "${port} " > ${tmpFile}
-        ${time} --quiet -f "%e" curl -x socks5://localhost:$port -s -o /tmp/bestPortAnswer ifconfig.me 2>> ${tmpFile}
+        ${time} --quiet -f "%e" curl -m 10 -x socks5://localhost:$port -s -o /tmp/bestPortAnswer ifconfig.me 2>> ${tmpFile}
         if [ $? -ne 0 ];then
             echo "error"
             continue
@@ -165,8 +165,9 @@ selectBest(){
 
     # delete reference
     echo "delete reference"
-    _runAsRoot "${firewallCMD} -t nat -n --line-numbers -L OUTPUT | grep ${tbl} | grep -o '^[0-9][0-9]*' | xargs -t -n 1 ${firewallCMD} -t nat -D OUTPUT"
-    _runAsRoot "${firewallCMD} -t nat -n --line-numbers -L PREROUTING | grep ${tbl} | grep -o '^[0-9][0-9]*' | xargs -t -n 1 ${firewallCMD} -t nat -D PREROUTING"
+    #如果有多条的话，要从index大的开始删除，否则会报index越界错误,所以要sort -r倒序；因为删除小的后，大的index会变小
+    _runAsRoot "${firewallCMD} -t nat -n --line-numbers -L OUTPUT | grep ${tbl} | grep -o '^[0-9][0-9]*' | sort -r | xargs -t -n 1 ${firewallCMD} -t nat -D OUTPUT"
+    _runAsRoot "${firewallCMD} -t nat -n --line-numbers -L PREROUTING | grep ${tbl} | grep -o '^[0-9][0-9]*' | sort -r | xargs -t -n 1 ${firewallCMD} -t nat -D PREROUTING"
 
     # echo "after reference"
     # _runAsRoot "${firewallCMD} -t nat -n --line-numbers -L"
