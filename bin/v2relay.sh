@@ -6,6 +6,7 @@ fi
 this="$(cd $(dirname $rpath) && pwd)"
 cd "$this"
 
+export PATH=$PATH:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 user="${SUDO_USER:-$(whoami)}"
 home="$(eval echo ~$user)"
 
@@ -156,21 +157,36 @@ selectBest(){
     _runAsRoot "${firewallCMD} -t nat -n --line-numbers -L OUTPUT | grep ${tbl} | grep -o '^[0-9][0-9]*' | xargs -t -n 1 ${firewallCMD} -t nat -D OUTPUT"
     _runAsRoot "${firewallCMD} -t nat -n --line-numbers -L PREROUTING | grep ${tbl} | grep -o '^[0-9][0-9]*' | xargs -t -n 1 ${firewallCMD} -t nat -D PREROUTING"
 
+    # echo "after reference"
+    # _runAsRoot "${firewallCMD} -t nat -n --line-numbers -L"
+
     #flush
     echo "flush chain"
     _runAsRoot "${firewallCMD} -t nat -F ${tbl}"
     _runAsRoot "${firewallCMD} -t nat -X ${tbl}"
 
+    # echo "after flush chain"
+    # _runAsRoot "${firewallCMD} -t nat -n --line-numbers -L"
+
     #new
     echo "new chain"
     _runAsRoot "${firewallCMD} -t nat -N ${tbl}"
-    echo "add rule to chain"
+
+    # echo "after new chain"
+    # _runAsRoot "${firewallCMD} -t nat -n --line-numbers -L"
+
+    echo "add rule to chain: bestPort: $bestPort"
     _runAsRoot "${firewallCMD} -t nat -A ${tbl} -p tcp --dport ${virtualPort} -j REDIRECT --to-ports ${bestPort}"
+    # echo "after add rule to chain"
+    # _runAsRoot "${firewallCMD} -t nat -n --line-numbers -L"
 
     #reference
     echo "reference"
     _runAsRoot "${firewallCMD} -t nat -A OUTPUT -p tcp --dport ${virtualPort} -j ${tbl}"
     _runAsRoot "${firewallCMD} -t nat -A PREROUTING -p tcp --dport ${virtualPort} -j ${tbl}"
+
+    # echo "after reference"
+    # _runAsRoot "${firewallCMD} -t nat -n --line-numbers -L"
 }
 
 _clearRule(){
