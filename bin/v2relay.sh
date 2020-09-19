@@ -135,7 +135,7 @@ selectBest(){
     result=times
     echo -n >${result}
     for port in ${backPorts//,/ };do
-        echo "test port: $port..."
+        echo "$(date +%FT%T) test port: $port..."
         echo -n "${port} " >> ${result}
         ${time} --quiet -f "%e" curl -x socks5://localhost:$port -s -o /tmp/bestPortAnswer ifconfig.me 2>> ${result}
     done
