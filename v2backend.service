@@ -1,0 +1,26 @@
+[Unit]
+Description=v2ray relay
+After=network.target
+
+[Service]
+#Type=forking
+#PIDFile=
+#ExecStart=
+#ExecStop=
+
+#Type=oneshot
+#RemainAfterExit=yes
+#ExecStart=
+#ExecStop=
+
+#Type=simple
+#ExecStartPre=
+ExecStart=V2RAY -c CONFIG
+#ExecStop=
+
+#User=USER
+#WorkingDirectory=
+Restart=always
+#Environment=
+[Install]
+WantedBy=multi-user.target

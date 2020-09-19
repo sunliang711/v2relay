@@ -3,3 +3,8 @@
 .idea/
 /net-traffic
 /Linux
+/bin/fetch
+/bin/v2ray.tmpl
+/bin/times
+/etc/backend.json
+/etc/sub.txt

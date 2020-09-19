@@ -56,6 +56,7 @@ function runAsRoot(){
 ###############################################################################
 # TODO
 install(){
+    _build
     cat msg
     bash download.sh || { echo "Download v2ray failed!"; exit 1; }
     sed -e "s|V2RAY|${thisDir}/Linux/v2ray|g" \
@@ -64,11 +65,27 @@ install(){
 
     runAsRoot "mv /tmp/v2relay.service /etc/systemd/system/v2relay.service"
     echo "systemd service v2relay has been installed."
+
+    sed -e "s|V2RAY|${thisDir}/Linux/v2ray|g" \
+        -e "s|CONFIG|${thisDir}/etc/backend.json|g"  v2backend.service > /tmp/v2backend.service
+    runAsRoot "mv /tmp/v2backend.service /etc/systemd/system/v2backend.service"
+    echo "systemd service v2backend has been installed."
+
     echo "add ${thisDir}/bin to PATH manually"
+}
+
+_build(){
+    cd /tmp
+    if [ ! -d fetchSubscription ];then
+        git clone https://gitee.com/sunliang711/fetchSubscription || { echo "clone fetchSubscription error "; exit 1; }
+    fi
+    cd fetchSubscription && bash ./build.sh build && cp fetch v2ray.tmpl ${thisDir}/bin
+    cd ${thisDir}
 }
 
 uninstall(){
     runAsRoot "rm /etc/systemd/system/v2relay.service"
+    runAsRoot "rm /etc/systemd/system/v2backend.service"
 }
 
 
@@ -82,7 +99,7 @@ Usage: $(basename $0) ${bold}CMD${reset}
 
 ${bold}CMD${reset}:
 EOF2
-    perl -lne 'print "\t$1" if /^\s*(\w+)\(\)\{$/' $(basename ${BASH_SOURCE}) | grep -v runAsRoot
+    perl -lne 'print "\t$2" if /^\s*(function)?\s*(\w+)\(\)\{$/' $(basename ${BASH_SOURCE}) | perl -lne "print if /^\t[^_]/"
 }
 
 case "$1" in

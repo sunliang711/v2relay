@@ -62,7 +62,16 @@ fi
 # function is hidden when begin with '_'
 ###############################################################################
 # TODO
+# redirect virtualPort to bestPort
+firewallCMD=
+if command -v iptables >/dev/null 2>&1;then
+    firewallCMD=iptables
+fi
+if command -v iptables-legacy >/dev/null 2>&1;then
+    firewallCMD="iptables-legacy"
+fi
 serviceName=v2relay
+backendName=v2backend
 rootid=0
 _root(){
     if [ $EUID -ne $rootid ];then
@@ -72,11 +81,16 @@ _root(){
 }
 
 start(){
+    _checkVirtualPort
     _runAsRoot "systemctl start $serviceName"
+    _runAsRoot "systemctl start ${backendName}"
+    selectBest
 }
 
 stop(){
     _runAsRoot "systemctl stop $serviceName"
+    _runAsRoot "systemctl stop ${backendName}"
+    _clearRule
 }
 
 restart(){
@@ -86,6 +100,111 @@ restart(){
 
 status(){
     _runAsRoot "systemctl status $serviceName"
+}
+
+backendConfig=backend.json
+subURLFile=${this}/../etc/sub.txt
+fetchSub(){
+    cd ${this}
+    ./fetch -o ${this}/../etc/${backendConfig} -u $(cat ${subURLFile})
+}
+
+_need(){
+    if ! command -v $1 >/dev/null 2>&1;then
+        echo "need $1"
+        exit 1
+    fi
+}
+
+_virtualPort(){
+    cd ${this}
+    local outPort=$(perl -lne "print if /BEGIN virtual port/../END virtual port/" ../etc/config.json | grep "\"port\"" | grep -o '[0-9][0-9]*')
+    echo "${outPort}"
+
+}
+
+selectBest(){
+    backPorts=$(_backendPorts)
+    if [ -z "${backPorts}" ];then
+        echo "Error: cannot find any backend port"
+        exit 1
+    fi
+
+    time=/usr/bin/time
+    result=times
+    echo -n >${result}
+    for port in ${backPorts//,/ };do
+        echo "test port: $port..."
+        echo -n "${port} " >> ${result}
+        ${time} --quiet -f "%e" curl -x socks5://localhost:$port -s -o /tmp/bestPortAnswer ifconfig.me 2>> ${result}
+    done
+
+    local bestPort=$(sort -n -k 2 ${result} | head -1 | awk '{print $1}')
+    if [ -z "${bestPort}" ];then
+        echo "find best port error"
+        exit 1
+    fi
+    echo "best port: ${bestPort}"
+
+    local virtualPort=$(_virtualPort)
+
+
+    tbl=redirtable
+
+    # delete reference
+    echo "delete reference"
+    _runAsRoot "${firewallCMD} -t nat -n --line-numbers -L OUTPUT | grep ${tbl} | grep -o '^[0-9][0-9]*' | xargs -t -n 1 ${firewallCMD} -t nat -D OUTPUT"
+    _runAsRoot "${firewallCMD} -t nat -n --line-numbers -L PREROUTING | grep ${tbl} | grep -o '^[0-9][0-9]*' | xargs -t -n 1 ${firewallCMD} -t nat -D PREROUTING"
+
+    #flush
+    echo "flush chain"
+    _runAsRoot "${firewallCMD} -t nat -F ${tbl}"
+    _runAsRoot "${firewallCMD} -t nat -X ${tbl}"
+
+    #new
+    echo "new chain"
+    _runAsRoot "${firewallCMD} -t nat -N ${tbl}"
+    echo "add rule to chain"
+    _runAsRoot "${firewallCMD} -t nat -A ${tbl} -p tcp --dport ${virtualPort} -j REDIRECT --to-ports ${bestPort}"
+
+    #reference
+    echo "reference"
+    _runAsRoot "${firewallCMD} -t nat -A OUTPUT -p tcp --dport ${virtualPort} -j ${tbl}"
+    _runAsRoot "${firewallCMD} -t nat -A PREROUTING -p tcp --dport ${virtualPort} -j ${tbl}"
+}
+
+_clearRule(){
+    tbl=redirtable
+
+    # delete reference
+    echo "delete reference"
+    _runAsRoot "${firewallCMD} -t nat -n --line-numbers -L OUTPUT | grep ${tbl} | grep -o '^[0-9][0-9]*' | xargs -t -n 1 ${firewallCMD} -t nat -D OUTPUT"
+    _runAsRoot "${firewallCMD} -t nat -n --line-numbers -L PREROUTING | grep ${tbl} | grep -o '^[0-9][0-9]*' | xargs -t -n 1 ${firewallCMD} -t nat -D PREROUTING"
+
+    #flush
+    echo "flush chain"
+    _runAsRoot "${firewallCMD} -t nat -F ${tbl}"
+    _runAsRoot "${firewallCMD} -t nat -X ${tbl}"
+}
+
+_checkVirtualPort(){
+    cd ${this}
+    _need nc
+    # find outPort
+    local outPort=$(_virtualPort)
+    echo "virtual outPort: $outPort"
+    if [ -z "$outPort" ];then
+        echo "Error: cannot find outPort!"
+        exit 1
+    fi
+    if nc -z localhost ${outPort} >/dev/null 2>&1;then
+        echo "${outPort} is in use,please use another port"
+        exit 1
+    fi
+}
+
+_backendPorts(){
+    perl -lne 'print if /\/\/InPorts:/' ../etc/backend.json | awk -F: '{print $2}'
 }
 
 config(){
