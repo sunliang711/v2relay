@@ -56,6 +56,11 @@ function runAsRoot(){
 ###############################################################################
 # TODO
 install(){
+
+    if [ ! -e /usr/bin/time ];then
+        echo "need /usr/bin/time"
+        runAsRoot "apt install time -y" || { echo " install time error!"; exit 1; }
+    fi
     _build
     # msg is made by 'figlet'
     cat msg
