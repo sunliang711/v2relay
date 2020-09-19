@@ -9,13 +9,6 @@ cd "$this"
 user="${SUDO_USER:-$(whoami)}"
 home="$(eval echo ~$user)"
 
-red=$(tput setaf 1)
-green=$(tput setaf 2)
-yellow=$(tput setaf 3)
-blue=$(tput setaf 4)
-cyan=$(tput setaf 5)
-        bold=$(tput bold)
-reset=$(tput sgr0)
 function runAsRoot(){
     verbose=0
     while getopts ":v" opt;do
@@ -55,49 +48,38 @@ function runAsRoot(){
 # function with 'function' is hidden when run help, without 'function' is show
 ###############################################################################
 # TODO
-install(){
-    _build
-    # msg is made by 'figlet'
-    cat msg
-    bash download.sh || { echo "Download v2ray failed!"; exit 1; }
-    sed -e "s|V2RAY|${this}/Linux/v2ray|g" \
-        -e "s|CONFIG|${this}/etc/config.json|g" \
-        -e "s|PRE|${this}/bin/port.sh addChain|g"  daemon/v2relay.service > /tmp/v2relay.service
-
-    runAsRoot "mv /tmp/v2relay.service /etc/systemd/system/v2relay.service"
-    echo "systemd service v2relay has been installed."
-
-    sed -e "s|V2RAY|${this}/Linux/v2ray|g" \
-        -e "s|CONFIG|${this}/etc/backend.json|g"  v2backend.service > /tmp/v2backend.service
-    runAsRoot "mv /tmp/v2backend.service /etc/systemd/system/v2backend.service"
-    echo "systemd service v2backend has been installed."
-
-    echo "add ${this}/bin to PATH manually"
-    echo "add crontab job"
-    echo "Note: please enable no password to run sudo if you are not root"
-    (crontab -l 2>/dev/null;echo "0 * * * * ${this}/bin/port.sh saveHour") | crontab -
-    (crontab -l 2>/dev/null;echo "59 23 * * * ${this}/bin/port.sh saveDay") | crontab -
-
-    (crontab -l 2>/dev/null;echo "*/2 * * * * ${this}/bin/v2relay.sh selectBest >>/tmp/selectBest.log") | crontab -
-
-    echo "add ${this}/bin to PATH manually"
+function check(){
+    if ! grep -qi 'koolshare mod v2.35' /etc/os-release;then
+        echo "Warning: Your OS is not koolshare lede v2.35"
+    fi
 }
 
-_build(){
-    cd /tmp
-    if [ ! -d fetchSubscription ];then
-        git clone https://gitee.com/sunliang711/fetchSubscription || { echo "clone fetchSubscription error "; exit 1; }
-    fi
-    cd fetchSubscription && bash ./build.sh build && cp fetch v2ray.tmpl ${this}/bin
-    cd ${this}
+install(){
+    #msg is made by 'figlet'
+    cat msg
+
+    bash download.sh || { echo "Download v2ray failed!"; exit 1; }
+
+    #
+    sed -e "s|V2RAY|${this}/Linux/v2ray|g" \
+        -e "s|CONFIG|${this}/etc/config.json|g" \
+        daemon/v2relay >/tmp/v2relay
+    chmod +x /tmp/v2relay
+    mv /tmp/v2relay /etc/init.d/v2relay
+    /etc/init.d/v2relay enable
+    /etc/init.d/v2relay start
+
+
+    # echo "add crontab job"
+    # (crontab -l 2>/dev/null;echo "0 * * * * $this/bin/port.sh saveHour") | crontab -
+    # (crontab -l 2>/dev/null;echo "59 23 * * * $this/bin/port.sh saveDay") | crontab -
+
+    # echo "add ${this}/bin to PATH manually"
 }
 
 uninstall(){
-    ./bin/v2relay.sh stop
-    rm ./bin/fetch
-    rm ./bin/v2ray.tmpl
-    runAsRoot "rm /etc/systemd/system/v2relay.service"
-    runAsRoot "rm /etc/systemd/system/v2backend.service"
+    # runAsRoot "rm /etc/systemd/system/v2relay.service"
+    echo TODO
 }
 
 
@@ -111,7 +93,7 @@ Usage: $(basename $0) ${bold}CMD${reset}
 
 ${bold}CMD${reset}:
 EOF2
-    perl -lne 'print "\t$2" if /^\s*(function)?\s*(\w+)\(\)\{$/' $(basename ${BASH_SOURCE}) | perl -lne "print if /^\t[^_]/"
+    perl -lne 'print "\t$1" if /^\s*(\w+)\(\)\{$/' $(basename ${BASH_SOURCE}) | grep -v runAsRoot
 }
 
 case "$1" in

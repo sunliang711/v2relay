@@ -6,6 +6,8 @@ fi
 thisDir="$(cd $(dirname $rpath) && pwd)"
 cd "$thisDir"
 
+export PATH=$PATH:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
 user="${SUDO_USER:-$(whoami)}"
 home="$(eval echo ~$user)"
 
@@ -56,6 +58,14 @@ function runAsRoot(){
 ###############################################################################
 # TODO
 declare -A ports=([8000]=nicoleFriend [8001]=nicole [8002]=chuan [8003]=no [8004]=xiang [8005]=me [8006]=wei [8020]=vmess [8021]=21 [8022]=22)
+
+editor=vi
+if command -v vim >/dev/null 2>&1;then
+    editor=vim
+fi
+if command -v nvim >/dev/null 2>&1;then
+    editor=nvim
+fi
 
 dest=${thisDir}/../net-traffic
 
@@ -174,6 +184,22 @@ saveHour(){
     echo "saveHour to $dest/$filename"
     (date +%FT%T;show) >> $dest/$filename
 }
+
+em(){
+    $editor ${BASH_SOURCE}
+}
+
+day(){
+    local filename=year-$(date +%Y)
+    $editor $dest/$filename
+}
+
+hour(){
+    local filename=month-$(date +%Y%m)
+    $editor $dest/$filename
+}
+
+
 
 
 

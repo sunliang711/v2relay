@@ -56,8 +56,11 @@ function runAsRoot(){
 ###############################################################################
 # TODO
 install(){
+<<<<<<< HEAD
     _build
+=======
     # msg is made by 'figlet'
+>>>>>>> 5212b92f095f0fa141746a0e449e038dc7f62944
     cat msg
     bash download.sh || { echo "Download v2ray failed!"; exit 1; }
     sed -e "s|V2RAY|${this}/Linux/v2ray|g" \
@@ -67,20 +70,21 @@ install(){
     runAsRoot "mv /tmp/v2relay.service /etc/systemd/system/v2relay.service"
     echo "systemd service v2relay has been installed."
 
-    sed -e "s|V2RAY|${this}/Linux/v2ray|g" \
-        -e "s|CONFIG|${this}/etc/backend.json|g"  v2backend.service > /tmp/v2backend.service
+<<<<<<< HEAD
+    sed -e "s|V2RAY|${thisDir}/Linux/v2ray|g" \
+        -e "s|CONFIG|${thisDir}/etc/backend.json|g"  v2backend.service > /tmp/v2backend.service
     runAsRoot "mv /tmp/v2backend.service /etc/systemd/system/v2backend.service"
     echo "systemd service v2backend has been installed."
 
-    echo "add ${this}/bin to PATH manually"
+    echo "add ${thisDir}/bin to PATH manually"
+=======
     echo "add crontab job"
     echo "Note: please enable no password to run sudo if you are not root"
     (crontab -l 2>/dev/null;echo "0 * * * * ${this}/bin/port.sh saveHour") | crontab -
     (crontab -l 2>/dev/null;echo "59 23 * * * ${this}/bin/port.sh saveDay") | crontab -
 
-    (crontab -l 2>/dev/null;echo "*/2 * * * * ${this}/bin/v2relay.sh selectBest >>/tmp/selectBest.log") | crontab -
-
     echo "add ${this}/bin to PATH manually"
+>>>>>>> 5212b92f095f0fa141746a0e449e038dc7f62944
 }
 
 _build(){
@@ -88,14 +92,11 @@ _build(){
     if [ ! -d fetchSubscription ];then
         git clone https://gitee.com/sunliang711/fetchSubscription || { echo "clone fetchSubscription error "; exit 1; }
     fi
-    cd fetchSubscription && bash ./build.sh build && cp fetch v2ray.tmpl ${this}/bin
-    cd ${this}
+    cd fetchSubscription && bash ./build.sh build && cp fetch v2ray.tmpl ${thisDir}/bin
+    cd ${thisDir}
 }
 
 uninstall(){
-    ./bin/v2relay.sh stop
-    rm ./bin/fetch
-    rm ./bin/v2ray.tmpl
     runAsRoot "rm /etc/systemd/system/v2relay.service"
     runAsRoot "rm /etc/systemd/system/v2backend.service"
 }

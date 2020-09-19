@@ -223,6 +223,10 @@ log(){
     _runAsRoot "tail -f /tmp/v2relay.log"
 }
 
+logb(){
+    _runAsRoot "tail -f /tmp/v2ray-backend.log"
+}
+
 em(){
     $editor ${BASH_SOURCE}
 }

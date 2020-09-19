@@ -76,6 +76,7 @@
             }
         },
         {
+<<<<<<< HEAD
             "tag": "shadowsocks1",
             "protocol": "shadowsocks",
             "port": 8009,
@@ -88,6 +89,8 @@
             }
         },
         {
+=======
+>>>>>>> 5212b92f095f0fa141746a0e449e038dc7f62944
             "tag": "shadowsocks2",
             "protocol": "shadowsocks",
             "port": 8001,

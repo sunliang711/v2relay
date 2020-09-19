@@ -1,0 +1,15 @@
+#!/bin/sh /etc/rc.common
+
+START=99
+STOP=15
+
+start(){
+    V2RAY -c CONFIG >/dev/null 2>&1 &
+}
+
+stop(){
+    pid=`ps | grep 'V2RAY -c CONFIG' | grep -v grep | awk '{ print $1 }'`
+    if [ -n "$pid" ];then
+        kill -9 $pid
+    fi
+}
