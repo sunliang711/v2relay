@@ -132,17 +132,28 @@ selectBest(){
     fi
 
     time=/usr/bin/time
-    result=times
+    local result=times
+    local tmpFile=/tmp/best.tmp
+
     echo -n >${result}
     for port in ${backPorts//,/ };do
-        echo "$(date +%FT%T) test port: $port..."
-        echo -n "${port} " >> ${result}
-        ${time} --quiet -f "%e" curl -x socks5://localhost:$port -s -o /tmp/bestPortAnswer ifconfig.me 2>> ${result}
+        echo -n "$(date +%FT%T) test port: $port..."
+        echo -n "${port} " > ${tmpFile}
+        ${time} --quiet -f "%e" curl -x socks5://localhost:$port -s -o /tmp/bestPortAnswer ifconfig.me 2>> ${tmpFile}
+        if [ $? -ne 0 ];then
+            echo "error"
+            continue
+        else
+            echo "done"
+        fi
+
+        cat ${tmpFile} >> ${result}
     done
 
     local bestPort=$(sort -n -k 2 ${result} | head -1 | awk '{print $1}')
     if [ -z "${bestPort}" ];then
         echo "find best port error"
+        echo "suggest: run fetchSub?"
         exit 1
     fi
     echo "best port: ${bestPort}"
