@@ -71,12 +71,14 @@ install(){
         -e "s|PRE|${this}/bin/port.sh addChain|g"  daemon/v2relay.service > /tmp/v2relay.service
 
     runAsRoot "mv /tmp/v2relay.service /etc/systemd/system/v2relay.service"
+    runAsRoot "systemctl enable v2relay"
     echo "systemd service v2relay has been installed."
 
     sed -e "s|V2RAY|${this}/Linux/v2ray|g" \
         -e "s|USER|${user}|g" \
         -e "s|CONFIG|${this}/etc/backend.json|g"  daemon/v2backend.service > /tmp/v2backend.service
     runAsRoot "mv /tmp/v2backend.service /etc/systemd/system/v2backend.service"
+    runAsRoot "systemctl enable v2backend"
     echo "systemd service v2backend has been installed."
 
     echo "add ${this}/bin to PATH manually"
