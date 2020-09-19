@@ -62,13 +62,15 @@ install(){
     bash download.sh || { echo "Download v2ray failed!"; exit 1; }
     sed -e "s|V2RAY|${this}/Linux/v2ray|g" \
         -e "s|CONFIG|${this}/etc/config.json|g" \
+        -e "s|USER|${user}|g" \
         -e "s|PRE|${this}/bin/port.sh addChain|g"  daemon/v2relay.service > /tmp/v2relay.service
 
     runAsRoot "mv /tmp/v2relay.service /etc/systemd/system/v2relay.service"
     echo "systemd service v2relay has been installed."
 
     sed -e "s|V2RAY|${this}/Linux/v2ray|g" \
-        -e "s|CONFIG|${this}/etc/backend.json|g"  v2backend.service > /tmp/v2backend.service
+        -e "s|USER|${user}|g" \
+        -e "s|CONFIG|${this}/etc/backend.json|g"  daemon/v2backend.service > /tmp/v2backend.service
     runAsRoot "mv /tmp/v2backend.service /etc/systemd/system/v2backend.service"
     echo "systemd service v2backend has been installed."
 
@@ -78,7 +80,7 @@ install(){
     (crontab -l 2>/dev/null;echo "0 * * * * ${this}/bin/port.sh saveHour") | crontab -
     (crontab -l 2>/dev/null;echo "59 23 * * * ${this}/bin/port.sh saveDay") | crontab -
 
-    (crontab -l 2>/dev/null;echo "*/2 * * * * ${this}/bin/v2relay.sh selectBest >>/tmp/selectBest.log") | crontab -
+    (crontab -l 2>/dev/null;echo "*/2 * * * * ${this}/bin/v2relay.sh selectBest >>/tmp/selectBest.log 2>&1") | crontab -
 
     echo "add ${this}/bin to PATH manually"
 }

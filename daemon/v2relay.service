@@ -18,7 +18,7 @@ ExecStartPre=PRE
 ExecStart=V2RAY -c CONFIG
 #ExecStop=
 
-#User=USER
+User=USER
 #WorkingDirectory=
 Restart=always
 #Environment=
