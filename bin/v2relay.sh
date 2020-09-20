@@ -150,6 +150,9 @@ selectBest(){
         cat ${tmpFile} >> ${result}
     done
 
+    echo "test result:"
+    cat ${result}
+
     local bestPort=$(sort -n -k 2 ${result} | head -1 | awk '{print $1}')
     if [ -z "${bestPort}" ];then
         echo "find best port error"
