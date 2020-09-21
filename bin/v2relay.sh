@@ -187,9 +187,9 @@ _addCron(){
 	#NOTE!! saveHour saveDay need run iptables with sudo,
 	#so make sure you can run iptables with sudo no passwd
 	#or you are root
-	0 * * * * ${this}/bin/port.sh saveHour
-	59 23 * * * ${this}/bin/port.sh saveDay
-	*/20 * * * * ${this}/bin/v2relay.sh selectBest >>/tmp/selectBest.log 2>&1
+	0 * * * * ${this}/port.sh saveHour
+	59 23 * * * ${this}/port.sh saveDay
+	*/20 * * * * ${this}/v2relay.sh selectBest >>/tmp/selectBest.log 2>&1
 	${endCron}
 	EOF
 
@@ -229,13 +229,13 @@ _addRule(){
     # echo "after new chain"
     # _runAsRoot "${firewallCMD} -t nat -n --line-numbers -L"
 
-    echo "add rule to chain: ${tbl} destPort: $destPort"
+    echo "add rule to chain: ${tbl} with destPort: $destPort"
     _runAsRoot "${firewallCMD} -t nat -A ${tbl} -p tcp --dport ${srcPort} -j REDIRECT --to-ports ${destPort}"
     # echo "after add rule to chain"
     # _runAsRoot "${firewallCMD} -t nat -n --line-numbers -L"
 
     # reference
-    echo "reference"
+    echo "reference chain: ${tbl}"
     _runAsRoot "${firewallCMD} -t nat -A OUTPUT -p tcp --dport ${srcPort} -j ${tbl}"
     _runAsRoot "${firewallCMD} -t nat -A PREROUTING -p tcp --dport ${srcPort} -j ${tbl}"
 
