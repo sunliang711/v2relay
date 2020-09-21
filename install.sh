@@ -84,7 +84,6 @@ install(){
     echo "add ${this}/bin to PATH manually"
     echo "add crontab job"
     echo "Note: please enable no password to run sudo if you are not root"
-    _addCron
     echo "add ${this}/bin to PATH manually"
 }
 
@@ -101,34 +100,11 @@ _build(){
 
 uninstall(){
     ./bin/v2relay.sh stop
-    rm ./bin/fetch
-    rm ./bin/v2ray.tmpl
+    rm ./bin/fetch 2>/dev/null
+    rm ./bin/v2ray.tmpl 2>/dev/null
     runAsRoot "rm /etc/systemd/system/v2relay.service"
     runAsRoot "rm /etc/systemd/system/v2backend.service"
-    _delCron
 }
-
-beginCron="#begin v2relay cron"
-endCron="#end v2relay cron"
-
-_addCron(){
-    local tmpCron=/tmp/cron.tmp$(date +%FT%T)
-    cat<<-EOF>${tmpCron}
-	${beginCron}
-	0 * * * * ${this}/bin/port.sh saveHour
-	59 23 * * * ${this}/bin/port.sh saveDay
-	*/20 * * * * ${this}/bin/v2relay.sh selectBest >>/tmp/selectBest.log 2>&1
-	${endCron}
-	EOF
-
-    (crontab -l 2>/dev/null ;cat ${tmpCron}) | crontab -
-}
-
-_delCron(){
-    (crontab -l 2>/dev/null | sed -e "/^${beginCron}/,/^${endCron}/d") | crontab -
-}
-
-
 
 ###############################################################################
 # write your code above

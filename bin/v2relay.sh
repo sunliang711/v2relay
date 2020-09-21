@@ -86,12 +86,14 @@ start(){
     _runAsRoot "systemctl start $serviceName"
     _runAsRoot "systemctl start ${backendName}"
     selectBest
+    _addCron
 }
 
 stop(){
     _runAsRoot "systemctl stop $serviceName"
     _runAsRoot "systemctl stop ${backendName}"
     _clearRule
+    _delCron
 }
 
 restart(){
@@ -166,7 +168,41 @@ selectBest(){
     local virtualPort=$(_virtualPort)
 
 
-    tbl=redirtable
+    _clearRule
+    _addRule ${virtualPort} ${bestPort}
+
+}
+
+beginCron="#begin v2relay cron"
+endCron="#end v2relay cron"
+
+_addCron(){
+    local tmpCron=/tmp/cron.tmp$(date +%FT%T)
+    if crontab -l 2>/dev/null | grep -q "${beginCron}";then
+        echo "Already exist,quit."
+        return 0
+    fi
+    cat<<-EOF>${tmpCron}
+	${beginCron}
+	#NOTE!! saveHour saveDay need run iptables with sudo,
+	#so make sure you can run iptables with sudo no passwd
+	#or you are root
+	0 * * * * ${this}/bin/port.sh saveHour
+	59 23 * * * ${this}/bin/port.sh saveDay
+	*/20 * * * * ${this}/bin/v2relay.sh selectBest >>/tmp/selectBest.log 2>&1
+	${endCron}
+	EOF
+
+    (crontab -l 2>/dev/null ;cat ${tmpCron}) | crontab -
+}
+
+_delCron(){
+    (crontab -l 2>/dev/null | sed -e "/${beginCron}/,/${endCron}/d") | crontab -
+}
+
+
+tbl=redirchain
+_clearRule(){
 
     # delete reference
     echo "delete reference"
@@ -174,50 +210,38 @@ selectBest(){
     _runAsRoot "${firewallCMD} -t nat -n --line-numbers -L OUTPUT | grep ${tbl} | grep -o '^[0-9][0-9]*' | sort -r | xargs -t -n 1 ${firewallCMD} -t nat -D OUTPUT"
     _runAsRoot "${firewallCMD} -t nat -n --line-numbers -L PREROUTING | grep ${tbl} | grep -o '^[0-9][0-9]*' | sort -r | xargs -t -n 1 ${firewallCMD} -t nat -D PREROUTING"
 
-    # echo "after reference"
-    # _runAsRoot "${firewallCMD} -t nat -n --line-numbers -L"
-
     #flush
-    echo "flush chain"
+    echo "flush chain: ${tbl}"
     _runAsRoot "${firewallCMD} -t nat -F ${tbl}"
+
+    #delete
+    echo "delete chain: ${tbl}"
     _runAsRoot "${firewallCMD} -t nat -X ${tbl}"
+}
 
-    # echo "after flush chain"
-    # _runAsRoot "${firewallCMD} -t nat -n --line-numbers -L"
-
-    #new
-    echo "new chain"
+_addRule(){
+    local srcPort=${1:?'missing src port'}
+    local destPort=${2:?'missing dest port'}
+    # new
+    echo "New chain: ${tbl}"
     _runAsRoot "${firewallCMD} -t nat -N ${tbl}"
 
     # echo "after new chain"
     # _runAsRoot "${firewallCMD} -t nat -n --line-numbers -L"
 
-    echo "add rule to chain: bestPort: $bestPort"
-    _runAsRoot "${firewallCMD} -t nat -A ${tbl} -p tcp --dport ${virtualPort} -j REDIRECT --to-ports ${bestPort}"
+    echo "add rule to chain: ${tbl} destPort: $destPort"
+    _runAsRoot "${firewallCMD} -t nat -A ${tbl} -p tcp --dport ${srcPort} -j REDIRECT --to-ports ${destPort}"
     # echo "after add rule to chain"
     # _runAsRoot "${firewallCMD} -t nat -n --line-numbers -L"
 
-    #reference
+    # reference
     echo "reference"
-    _runAsRoot "${firewallCMD} -t nat -A OUTPUT -p tcp --dport ${virtualPort} -j ${tbl}"
-    _runAsRoot "${firewallCMD} -t nat -A PREROUTING -p tcp --dport ${virtualPort} -j ${tbl}"
+    _runAsRoot "${firewallCMD} -t nat -A OUTPUT -p tcp --dport ${srcPort} -j ${tbl}"
+    _runAsRoot "${firewallCMD} -t nat -A PREROUTING -p tcp --dport ${srcPort} -j ${tbl}"
 
     # echo "after reference"
     # _runAsRoot "${firewallCMD} -t nat -n --line-numbers -L"
-}
 
-_clearRule(){
-    tbl=redirtable
-
-    # delete reference
-    echo "delete reference"
-    _runAsRoot "${firewallCMD} -t nat -n --line-numbers -L OUTPUT | grep ${tbl} | grep -o '^[0-9][0-9]*' | xargs -t -n 1 ${firewallCMD} -t nat -D OUTPUT"
-    _runAsRoot "${firewallCMD} -t nat -n --line-numbers -L PREROUTING | grep ${tbl} | grep -o '^[0-9][0-9]*' | xargs -t -n 1 ${firewallCMD} -t nat -D PREROUTING"
-
-    #flush
-    echo "flush chain"
-    _runAsRoot "${firewallCMD} -t nat -F ${tbl}"
-    _runAsRoot "${firewallCMD} -t nat -X ${tbl}"
 }
 
 _checkVirtualPort(){
