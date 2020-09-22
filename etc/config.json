@@ -52,17 +52,18 @@
             "protocol": "socks",
             "port": 8020,
             "settings": {
-                "auth": "password",
-                "accounts": [
-                    {
-                        "user": "user",
-                        "pass": "usernopass"
-                    },
-                    {
-                        "user": "user2",
-                        "pass": "user2nopass"
-                    }
-                ],
+                "auth": "noauth",
+                // "auth": "password",
+                // "accounts": [
+                //     {
+                //         "user": "user",
+                //         "pass": "usernopass"
+                //     },
+                //     {
+                //         "user": "user2",
+                //         "pass": "user2nopass"
+                //     }
+                // ],
                 "userLevel": 0,
                 "ip": "0.0.0.0",
                 "udp": true
@@ -78,10 +79,10 @@
         {
             "tag": "shadowsocks1",
             "protocol": "shadowsocks",
-            "port": 8009,
+            "port": 8000,
             "settings": {
                 "method": "aes-256-cfb",
-                "password": "8009",
+                "password": "8000",
                 "udp": true,
                 "level": 0,
                 "ota": false
