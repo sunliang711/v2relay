@@ -109,7 +109,11 @@ backendConfig=backend.json
 subURLFile=${this}/../etc/sub.txt
 fetchSub(){
     cd ${this}
-    ./fetch -o ${this}/../etc/${backendConfig} -t ${this}/../etc/v2ray.tmpl -u $(cat ${subURLFile})
+    local output="${this}/../etc/${backendConfig}"
+    if [ -e ${output} ];then
+        mv ${output} ${output}-$(date +%FT%T)
+    fi
+    ./fetch -o ${output} -t ${this}/../etc/v2ray.tmpl -u $(cat ${subURLFile}) -w VIP2
 }
 
 _need(){
@@ -137,25 +141,31 @@ selectBest(){
     local result=/tmp/best-times
     local tmpFile=/tmp/best.tmp
 
+    local separator='|'
+    # clear ${result} file
     echo -n >${result}
-    for port in ${backPorts//,/ };do
-        echo -n "$(date +%FT%T) test port: $port..."
-        echo -n "${port} " > ${tmpFile}
+    while read -r portPs;do
+        local port=${portPs%:*}
+        local ps=${portPs#*:}
+        echo -n "$(date +%FT%T) test port: $port ps: $ps... "
+        echo -n "${port}${separator}${ps}${separator}" > ${tmpFile}
         ${time} --quiet -f "%e" curl -m 10 -x socks5://localhost:$port -s -o /tmp/bestPortAnswer ifconfig.me 2>> ${tmpFile}
         if [ $? -ne 0 ];then
             echo "error"
             continue
         else
-            echo "done"
+            echo "ok"
         fi
 
         cat ${tmpFile} >> ${result}
-    done
+    done <<< ${backPorts}
 
     echo "test result:"
     cat ${result}
 
-    local bestPort=$(sort -n -k 2 ${result} | head -1 | awk '{print $1}')
+    local bestLine=$(sort -n -t ${separator} -k 3 ${result} | head -1)
+    echo "best node: ${bestLine}"
+    local bestPort=$(echo ${bestLine} | awk -F${separator} '{print $1}')
     if [ -z "${bestPort}" ];then
         echo "find best port error"
         echo "suggest: run fetchSub?"
@@ -261,7 +271,8 @@ _checkVirtualPort(){
 }
 
 _backendPorts(){
-    perl -lne 'print if /\/\/InPorts:/' ../etc/backend.json | awk -F: '{print $2}'
+    # perl -lne 'print if /\/\/InPorts:/' ../etc/backend.json | awk -F: '{print $2}'
+    perl -lne 'print $1 if /"BEGIN port":"([^"]+)"/' ../etc/backend.json
 }
 
 config(){
