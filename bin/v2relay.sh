@@ -141,7 +141,7 @@ selectBest(){
     local result=/tmp/best-times
     local tmpFile=/tmp/best.tmp
 
-    local separator='|'
+    local separator='`'
     # clear ${result} file
     echo -n >${result}
     while read -r portPs;do
