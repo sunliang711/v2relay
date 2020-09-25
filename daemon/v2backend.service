@@ -14,9 +14,11 @@ After=network.target
 #ExecStop=
 
 #Type=simple
-#ExecStartPre=
+ExecStartPre=START_PRE
 ExecStart=V2RAY -c CONFIG
+ExecStartPost=START_POST
 #ExecStop=
+ExecStopPost=STOP_POST
 
 User=USER
 #WorkingDirectory=

@@ -76,14 +76,15 @@ install(){
 
     sed -e "s|V2RAY|${this}/Linux/v2ray|g" \
         -e "s|USER|${user}|g" \
-        -e "s|CONFIG|${this}/etc/backend.json|g"  daemon/v2backend.service > /tmp/v2backend.service
+        -e "s|CONFIG|${this}/etc/backend.json|g" \
+        -e "s|START_PRE|${this}/bin/v2relay.sh start_pre|g" \
+        -e "s|START_POST|${this}/bin/v2relay.sh start_post|g" \
+        -e "s|STOP_POST|${this}/bin/v2relay.sh stop_post|g"  daemon/v2backend.service > /tmp/v2backend.service
     runAsRoot "mv /tmp/v2backend.service /etc/systemd/system/v2backend.service"
     runAsRoot "systemctl enable v2backend"
     echo "systemd service v2backend has been installed."
 
-    echo "add ${this}/bin to PATH manually"
-    echo "add crontab job"
-    echo "Note: please enable no password to run sudo if you are not root"
+    echo "Note: in crontab please enable no password to run sudo if you are not root"
     echo "add ${this}/bin to PATH manually"
 }
 

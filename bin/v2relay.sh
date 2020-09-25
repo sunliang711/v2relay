@@ -82,16 +82,31 @@ _root(){
 }
 
 start(){
-    _checkVirtualPort
+    # _checkVirtualPort
     _runAsRoot "systemctl start $serviceName"
     _runAsRoot "systemctl start ${backendName}"
+    # selectBest
+    # _addCron
+}
+
+start_pre(){
+    _checkVirtualPort
+}
+
+start_post(){
     selectBest
     _addCron
 }
 
+
 stop(){
     _runAsRoot "systemctl stop $serviceName"
     _runAsRoot "systemctl stop ${backendName}"
+    # _clearRule
+    # _delCron
+}
+
+stop_post(){
     _clearRule
     _delCron
 }
@@ -113,7 +128,7 @@ fetchSub(){
     if [ -e ${output} ];then
         mv ${output} ${output}-$(date +%FT%T)
     fi
-    ./fetch -o ${output} -t ${this}/../etc/v2ray.tmpl -u $(cat ${subURLFile}) -w VIP2
+    ./fetch -o ${output} -t ${this}/../etc/v2ray.tmpl -p 18000 -u $(cat ${subURLFile}) -w VIP2
 }
 
 _need(){
