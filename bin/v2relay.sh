@@ -132,9 +132,9 @@ fetchSub(){
         mv ${backendConfig} ${backends}/backend-$(date +%FT%T).json
     fi
     local subURL="$(cat ${subURLFile})"
-    local whiteList="VIP2,VIP1"
-    echo "fetch subscription: to file ${backendConfig} with url: ${subURL} whilte list: ${whiteList} ..."
-    ./fetch -o ${backendConfig} -t ${this}/../etc/v2ray.tmpl -p 18000 -u ${subURL} -w ${whiteList}
+    local filterList="w:VIP2;b:游戏"
+    echo "fetch subscription: to file ${backendConfig} with url: ${subURL} filter list: ${filterList} ..."
+    ./fetch -o ${backendConfig} -t ${this}/../etc/v2ray.tmpl -p 18000 -u ${subURL} --filter ${filterList}
 }
 
 _need(){
