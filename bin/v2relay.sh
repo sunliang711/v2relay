@@ -120,15 +120,21 @@ status(){
     _runAsRoot "systemctl status $serviceName"
 }
 
-backendConfig=backend.json
+backendConfig=${this}/../etc/backend.json
 subURLFile=${this}/../etc/sub.txt
+backends=${this}/../etc/backends
 fetchSub(){
-    cd ${this}
-    local output="${this}/../etc/${backendConfig}"
-    if [ -e ${output} ];then
-        mv ${output} ${output}-$(date +%FT%T)
+    if [ ! -d ${backends} ];then
+        mkdir -p ${backends}
     fi
-    ./fetch -o ${output} -t ${this}/../etc/v2ray.tmpl -p 18000 -u $(cat ${subURLFile}) -w VIP2
+    cd ${this}
+    if [ -e ${backendConfig} ];then
+        mv ${backendConfig} ${backends}/backend-$(date +%FT%T).json
+    fi
+    local subURL="$(cat ${subURLFile})"
+    local whiteList="VIP2,VIP1"
+    echo "fetch subscription: to file ${backendConfig} with url: ${subURL} whilte list: ${whiteList} ..."
+    ./fetch -o ${backendConfig} -t ${this}/../etc/v2ray.tmpl -p 18000 -u ${subURL} -w ${whiteList}
 }
 
 _need(){

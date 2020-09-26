@@ -7,4 +7,6 @@
 /etc/v2ray.tmpl
 /bin/times
 /etc/backend.json
-/etc/sub.txt
+/etc/sub.txt*
+backend.json-*
+backends/
