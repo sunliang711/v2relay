@@ -57,7 +57,7 @@ function runAsRoot(){
 # function with 'function' is hidden when run help, without 'function' is show
 ###############################################################################
 # TODO
-declare -A ports=([8000]=nicoleFriend [8001]=nicole [8002]=chuan [8003]=no [8004]=xiang [8005]=me [8006]=wei [8020]=vmess [8021]=21 [8022]=22)
+declare -A ports=([8000]=nicoleFriend [8001]=nicole [8002]=chuan [8003]=no [8004]=xiang [8005]=me [8006]=wei [8020]=socks5 [8021]=21 [8022]=vmess)
 
 editor=vi
 if command -v vim >/dev/null 2>&1;then
