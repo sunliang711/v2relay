@@ -235,22 +235,25 @@ _delCron(){
     (crontab -l 2>/dev/null | sed -e "/${beginCron}/,/${endCron}/d") | crontab -
 }
 
+_tabEcho(){
+    echo -e "\t$*"
+}
 
 tbl=redirchain
 _clearRule(){
     echo "Clear rule..."
     # delete reference
-    echo "Delete reference"
+    _tabEcho "Delete reference"
     #如果有多条的话，要从index大的开始删除，否则会报index越界错误,所以要sort -r倒序；因为删除小的后，大的index会变小
-    _runAsRoot "${firewallCMD} -t nat -n --line-numbers -L OUTPUT | grep ${tbl} | grep -o '^[0-9][0-9]*' | sort -r | xargs -t -n 1 ${firewallCMD} -t nat -D OUTPUT"
-    _runAsRoot "${firewallCMD} -t nat -n --line-numbers -L PREROUTING | grep ${tbl} | grep -o '^[0-9][0-9]*' | sort -r | xargs -t -n 1 ${firewallCMD} -t nat -D PREROUTING"
+    _runAsRoot "${firewallCMD} -t nat -n --line-numbers -L OUTPUT | grep ${tbl} | grep -o '^[0-9][0-9]*' | sort -r | xargs -n 1 ${firewallCMD} -t nat -D OUTPUT"
+    _runAsRoot "${firewallCMD} -t nat -n --line-numbers -L PREROUTING | grep ${tbl} | grep -o '^[0-9][0-9]*' | sort -r | xargs -n 1 ${firewallCMD} -t nat -D PREROUTING"
 
     #flush
-    echo "Flush chain: ${tbl}"
+    _tabEcho "Flush chain: ${tbl}"
     _runAsRoot "${firewallCMD} -t nat -F ${tbl}"
 
     #delete
-    echo "Delete chain: ${tbl}"
+    _tabEcho "Delete chain: ${tbl}"
     _runAsRoot "${firewallCMD} -t nat -X ${tbl}"
 }
 
@@ -259,19 +262,19 @@ _addRule(){
     local srcPort=${1:?'missing src port'}
     local destPort=${2:?'missing dest port'}
     # new
-    echo "New chain: ${tbl}"
+    _tabEcho "New chain: ${tbl}"
     _runAsRoot "${firewallCMD} -t nat -N ${tbl}"
 
     # echo "after new chain"
     # _runAsRoot "${firewallCMD} -t nat -n --line-numbers -L"
 
-    echo "Add rule to chain: ${tbl} with destPort: $destPort"
+    _tabEcho "Add rule to chain: ${tbl} with destPort: $destPort"
     _runAsRoot "${firewallCMD} -t nat -A ${tbl} -p tcp --dport ${srcPort} -j REDIRECT --to-ports ${destPort}"
     # echo "after add rule to chain"
     # _runAsRoot "${firewallCMD} -t nat -n --line-numbers -L"
 
     # reference
-    echo "Reference chain: ${tbl}"
+    _tabEcho "Reference chain: ${tbl}"
     _runAsRoot "${firewallCMD} -t nat -A OUTPUT -p tcp --dport ${srcPort} -j ${tbl}"
     _runAsRoot "${firewallCMD} -t nat -A PREROUTING -p tcp --dport ${srcPort} -j ${tbl}"
 
