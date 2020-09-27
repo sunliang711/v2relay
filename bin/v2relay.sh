@@ -152,6 +152,7 @@ _virtualPort(){
 }
 
 selectBest(){
+    echo "Begin select best..."
     backPorts=$(_backendPorts)
     if [ -z "${backPorts}" ];then
         echo "Error: cannot find any backend port"
@@ -159,8 +160,9 @@ selectBest(){
     fi
 
     time=/usr/bin/time
-    local result=/tmp/best-times
-    local tmpFile=/tmp/best.tmp
+    local result=/tmp/selectBest.results
+    local tmpFile=/tmp/selectBest.result
+    local elapsed=/tmp/seleceBest.elapsed
 
     local separator='`'
     # clear ${result} file
@@ -168,20 +170,22 @@ selectBest(){
     while read -r portPs;do
         local port=${portPs%:*}
         local ps=${portPs#*:}
-        echo -n "$(date +%FT%T) test port: $port ps: $ps... "
+        echo -n "$(date +%FT%T) test port: $port ps: $ps ... "
         echo -n "${port}${separator}${ps}${separator}" > ${tmpFile}
-        ${time} --quiet -f "%e" curl -m 10 -x socks5://localhost:$port -s -o /tmp/bestPortAnswer ifconfig.me 2>> ${tmpFile}
+        ${time} --quiet -f "%e" curl -m 10 -x socks5://localhost:$port -s -o /tmp/bestPortAnswer ifconfig.me 2> ${elapsed}
         if [ $? -ne 0 ];then
-            echo "error"
+            echo "[Error]"
             continue
         else
-            echo "ok"
+            cat ${elapsed} >> ${tmpFile}
+            echo -n "[OK] elapsed: "
+            cat ${elapsed}
         fi
 
         cat ${tmpFile} >> ${result}
     done <<< ${backPorts}
 
-    echo "test result:"
+    echo "[Test result]:"
     cat ${result}
 
     local bestLine=$(sort -n -t ${separator} -k 3 ${result} | head -1)
@@ -234,23 +238,24 @@ _delCron(){
 
 tbl=redirchain
 _clearRule(){
-
+    echo "Clear rule..."
     # delete reference
-    echo "delete reference"
+    echo "Delete reference"
     #如果有多条的话，要从index大的开始删除，否则会报index越界错误,所以要sort -r倒序；因为删除小的后，大的index会变小
     _runAsRoot "${firewallCMD} -t nat -n --line-numbers -L OUTPUT | grep ${tbl} | grep -o '^[0-9][0-9]*' | sort -r | xargs -t -n 1 ${firewallCMD} -t nat -D OUTPUT"
     _runAsRoot "${firewallCMD} -t nat -n --line-numbers -L PREROUTING | grep ${tbl} | grep -o '^[0-9][0-9]*' | sort -r | xargs -t -n 1 ${firewallCMD} -t nat -D PREROUTING"
 
     #flush
-    echo "flush chain: ${tbl}"
+    echo "Flush chain: ${tbl}"
     _runAsRoot "${firewallCMD} -t nat -F ${tbl}"
 
     #delete
-    echo "delete chain: ${tbl}"
+    echo "Delete chain: ${tbl}"
     _runAsRoot "${firewallCMD} -t nat -X ${tbl}"
 }
 
 _addRule(){
+    echo "Add rule..."
     local srcPort=${1:?'missing src port'}
     local destPort=${2:?'missing dest port'}
     # new
@@ -260,13 +265,13 @@ _addRule(){
     # echo "after new chain"
     # _runAsRoot "${firewallCMD} -t nat -n --line-numbers -L"
 
-    echo "add rule to chain: ${tbl} with destPort: $destPort"
+    echo "Add rule to chain: ${tbl} with destPort: $destPort"
     _runAsRoot "${firewallCMD} -t nat -A ${tbl} -p tcp --dport ${srcPort} -j REDIRECT --to-ports ${destPort}"
     # echo "after add rule to chain"
     # _runAsRoot "${firewallCMD} -t nat -n --line-numbers -L"
 
     # reference
-    echo "reference chain: ${tbl}"
+    echo "Reference chain: ${tbl}"
     _runAsRoot "${firewallCMD} -t nat -A OUTPUT -p tcp --dport ${srcPort} -j ${tbl}"
     _runAsRoot "${firewallCMD} -t nat -A PREROUTING -p tcp --dport ${srcPort} -j ${tbl}"
 
