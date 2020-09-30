@@ -208,6 +208,17 @@ selectBest(){
 
 }
 
+check(){
+    echo -n "$(date +%FT%T) check..."
+    local outPort=$(_virtualPort)
+    if curl -s -x socks5://localhost:${outPort} ifconfig.me >/dev/null 2>&1;then
+        echo "OK"
+    else
+        echo
+        selectBest
+    fi
+}
+
 beginCron="#begin v2relay cron"
 endCron="#end v2relay cron"
 
@@ -224,7 +235,8 @@ _addCron(){
 	#or you are root
 	0 * * * * ${this}/port.sh saveHour
 	59 23 * * * ${this}/port.sh saveDay
-	*/20 * * * * ${this}/v2relay.sh selectBest >>/tmp/selectBest.log 2>&1
+	#*/20 * * * * ${this}/v2relay.sh selectBest >>/tmp/selectBest.log 2>&1
+	*/10 * * * * ${this}/v2relay.sh check >>/tmp/selectBest.log 2>&1
 	${endCron}
 	EOF
 

@@ -53,17 +53,17 @@
             "port": 8020,
             "settings": {
                 "auth": "noauth",
-                // "auth": "password",
-                // "accounts": [
-                //     {
-                //         "user": "user",
-                //         "pass": "usernopass"
-                //     },
-                //     {
-                //         "user": "user2",
-                //         "pass": "user2nopass"
-                //     }
-                // ],
+                "auth": "password",
+                "accounts": [
+                    {
+                        "user": "user",
+                        "pass": "usernopass"
+                    },
+                    {
+                        "user": "user2",
+                        "pass": "user2nopass"
+                    }
+                ],
                 "userLevel": 0,
                 "ip": "0.0.0.0",
                 "udp": true
