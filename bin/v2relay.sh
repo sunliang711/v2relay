@@ -94,7 +94,7 @@ start_pre(){
 }
 
 start_post(){
-    selectBest
+    selectBest2
     _addCron
 }
 
@@ -133,6 +133,7 @@ fetchSub(){
     fi
     local subURL="$(cat ${subURLFile})"
     local filterList="w:VIP2;b:游戏"
+    # local filterList="b:游戏"
     echo "fetch subscription: to file ${backendConfig} with url: ${subURL} filter list: ${filterList} ..."
     ./fetch -o ${backendConfig} -t ${this}/../etc/v2ray.tmpl -p 18000 -u ${subURL} --filter ${filterList}
 }
@@ -208,6 +209,38 @@ selectBest(){
 
 }
 
+selectBest2(){
+    local portPsFileName=$(perl -lne 'print $1 if /portFile="(.+)"/' ../fastestPort/config.toml)
+    echo "portPsFileName: ${portPsFileName}"
+    _backendPorts > "${portPsFileName}"
+
+    local result=$(perl -lne 'print $1 if /resultFile="(.+)"/' ../fastestPort/config.toml)
+    echo "resultFile: ${result}"
+    ../fastestPort/fastestPort -c ../fastestPort/config.toml
+
+    echo "[Test result]:"
+    cat ${result}
+
+    local separator='`'
+    local bestLine=$(sort -n -t ${separator} -k 3 ${result} | head -1)
+    echo "best node: ${bestLine}"
+    local bestPort=$(echo ${bestLine} | awk -F${separator} '{print $1}')
+    if [ -z "${bestPort}" ];then
+        echo "find best port error"
+        echo "suggest: run fetchSub?"
+        exit 1
+    fi
+    echo "best port: ${bestPort}"
+
+    # /bin/rm -rf ${result}
+
+    local virtualPort=$(_virtualPort)
+
+
+    _clearRule
+    _addRule ${virtualPort} ${bestPort}
+}
+
 check(){
     echo -n "$(date +%FT%T) check..."
     local outPort=$(_virtualPort)
@@ -215,7 +248,7 @@ check(){
         echo "OK"
     else
         echo
-        selectBest
+        selectBest2
     fi
 }
 
@@ -235,8 +268,9 @@ _addCron(){
 	#or you are root
 	0 * * * * ${this}/port.sh saveHour
 	59 23 * * * ${this}/port.sh saveDay
-	#*/20 * * * * ${this}/v2relay.sh selectBest >>/tmp/selectBest.log 2>&1
-	*/10 * * * * ${this}/v2relay.sh check >>/tmp/selectBest.log 2>&1
+	#*/20 * * * * ${this}/v2relay.sh selectBest2 >>/tmp/selectBest2.log 2>&1
+	5 * * * * ${this}/v2relay.sh selectBest2 >>/tmp/selectBest2.log 2>&1
+	*/10 * * * * ${this}/v2relay.sh check >>/tmp/selectBest2.log 2>&1
 	${endCron}
 	EOF
 

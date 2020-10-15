@@ -97,6 +97,10 @@ _build(){
     fi
     cd fetchSubscription && git pull && bash ./build.sh build && cp fetch  ${this}/bin && cp v2ray.tmpl ${this}/etc
     cd ${this}
+
+    cd ./fastestPort
+    ./build.sh build
+    cd ${this}
 }
 
 uninstall(){

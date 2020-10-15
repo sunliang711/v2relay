@@ -10,3 +10,4 @@
 /etc/sub.txt*
 backend.json-*
 backends/
+/fastestPort/fastestPort
