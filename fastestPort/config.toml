@@ -1,11 +1,18 @@
+#portFile: input
 portFile="/tmp/portPs"
+
 maxCocurrent=5
 #unit: ms
 timeout=9000
+
 targetURL="http://ifconfig.me"
+
+#resultFile: output
 resultFile="/tmp/fastestPort.result"
+
 [log]
-level="debug"
-logfile="/tmp/fastestPort.log"
+level="info"
+# logfile="/tmp/fastestPort.log"
+logfile=""
 showFullTime=true
 reportCaller=false

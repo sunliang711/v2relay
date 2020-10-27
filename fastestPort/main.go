@@ -94,12 +94,16 @@ func fastestPort(pps []*PortPs, timeout int, targetURL string, outputFile string
 			start := time.Now()
 			_, err = client.Get(targetURL)
 			if err != nil {
-				logrus.Infof("port: %v ps: %v Error", pp.Port, pp.Ps, err)
+				logrus.Errorf("port: %v ps: %v Error: %v", pp.Port, pp.Ps, err)
 				return
 			}
 			elapsedMS := time.Since(start).Milliseconds()
-			logrus.Infof("port: %v ps: %v elpased time: %d ms", pp.Port, pp.Ps, elapsedMS)
-			file.WriteString(fmt.Sprintf("%v`%v`%v\n", pp.Port, pp.Ps, elapsedMS))
+
+			logrus.Infof("port: %v elapsed time: %v [ms] ps: %v", pp.Port, elapsedMS, pp.Ps)
+			_, err = file.WriteString(fmt.Sprintf("%v`%v`%v\n", pp.Port, elapsedMS, pp.Ps))
+			if err != nil {
+				logrus.Errorf("Write elapsedMS to file: %v error: %v", outputFile, err)
+			}
 		}(pp)
 	}
 	wg.Wait()

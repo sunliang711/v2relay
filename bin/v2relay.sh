@@ -121,21 +121,26 @@ status(){
 }
 
 backendConfig=${this}/../etc/backend.json
+newBackendConfig=/tmp/newbackend.json
 subURLFile=${this}/../etc/sub.txt
 backends=${this}/../etc/backends
+filterList="w:VIP2;b:游戏"
+# filterList="b:游戏"
 fetchSub(){
-    if [ ! -d ${backends} ];then
-        mkdir -p ${backends}
-    fi
     cd ${this}
-    if [ -e ${backendConfig} ];then
-        mv ${backendConfig} ${backends}/backend-$(date +%FT%T).json
-    fi
     local subURL="$(cat ${subURLFile})"
-    local filterList="w:VIP2;b:游戏"
-    # local filterList="b:游戏"
     echo "fetch subscription: to file ${backendConfig} with url: ${subURL} filter list: ${filterList} ..."
-    ./fetch -o ${backendConfig} -t ${this}/../etc/v2ray.tmpl -p 18000 -u ${subURL} --filter ${filterList}
+    ./fetch -o ${newBackendConfig} -t ${this}/../etc/v2ray.tmpl -p 18000 -u ${subURL} --filter ${filterList} -l info
+
+    if [ $? -eq 0 ];then
+        if [ ! -d ${backends} ];then
+            mkdir -p ${backends}
+        fi
+        echo "Backup old config file"
+        mv ${backendConfig} ${backends}/backend-$(date +%FT%T).json
+        echo "Move new config file"
+        mv ${newBackendConfig} ${backendConfig}
+    fi
 }
 
 _need(){
@@ -222,7 +227,7 @@ selectBest2(){
     cat ${result}
 
     local separator='`'
-    local bestLine=$(sort -n -t ${separator} -k 3 ${result} | head -1)
+    local bestLine=$(sort -n -t ${separator} -k 2 ${result} | head -1)
     echo "best node: ${bestLine}"
     local bestPort=$(echo ${bestLine} | awk -F${separator} '{print $1}')
     if [ -z "${bestPort}" ];then
