@@ -1,7 +1,7 @@
 {
     "log": {
-        "access": "/tmp/v2relay.log",
-        "error": "/tmp/v2relay.log",
+        "access": "/tmp/v2ray-frontend.log",
+        "error": "/tmp/v2ray-frontend.log",
         "loglevel": "warning"
     },
     "inbounds": [

@@ -10,6 +10,7 @@ export PATH=$PATH:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 user="${SUDO_USER:-$(whoami)}"
 home="$(eval echo ~$user)"
 
+export TERM=dumb
 red=$(tput setaf 1)
 green=$(tput setaf 2)
 yellow=$(tput setaf 3)
@@ -71,7 +72,7 @@ fi
 if command -v iptables-legacy >/dev/null 2>&1;then
     firewallCMD="iptables-legacy"
 fi
-serviceName=v2relay
+serviceName=v2frontend
 backendName=v2backend
 rootid=0
 _root(){
@@ -152,7 +153,7 @@ _need(){
 
 _virtualPort(){
     cd ${this}
-    local outPort=$(perl -lne "print if /BEGIN virtual port/../END virtual port/" ../etc/config.json | grep "\"port\"" | grep -o '[0-9][0-9]*')
+    local outPort=$(perl -lne "print if /BEGIN virtual port/../END virtual port/" ../etc/frontend.json | grep "\"port\"" | grep -o '[0-9][0-9]*')
     echo "${outPort}"
 
 }
@@ -356,7 +357,7 @@ _backendPorts(){
 }
 
 config(){
-    configFile=${this}/../etc/config.json
+    configFile=${this}/../etc/frontend.json
     mtime0=$(stat $configFile | grep Modify)
     $editor ${configFile}
     mtime1=$(stat $configFile | grep Modify)

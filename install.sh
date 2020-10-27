@@ -66,13 +66,13 @@ install(){
     cat msg
     bash download.sh || { echo "Download v2ray failed!"; exit 1; }
     sed -e "s|V2RAY|${this}/Linux/v2ray|g" \
-        -e "s|CONFIG|${this}/etc/config.json|g" \
+        -e "s|CONFIG|${this}/etc/frontend.json|g" \
         -e "s|USER|${user}|g" \
-        -e "s|PRE|${this}/bin/port.sh addChain|g"  daemon/v2relay.service > /tmp/v2relay.service
+        -e "s|PRE|${this}/bin/port.sh addChain|g"  daemon/v2frontend.service > /tmp/v2frontend.service
 
-    runAsRoot "mv /tmp/v2relay.service /etc/systemd/system/v2relay.service"
-    runAsRoot "systemctl enable v2relay"
-    echo "systemd service v2relay has been installed."
+    runAsRoot "mv /tmp/v2frontend.service /etc/systemd/system/v2frontend.service"
+    runAsRoot "systemctl enable v2frontend"
+    echo "systemd service v2frontend has been installed."
 
     sed -e "s|V2RAY|${this}/Linux/v2ray|g" \
         -e "s|USER|${user}|g" \
@@ -107,7 +107,7 @@ uninstall(){
     ./bin/v2relay.sh stop
     rm ./bin/fetch 2>/dev/null
     rm ./bin/v2ray.tmpl 2>/dev/null
-    runAsRoot "rm /etc/systemd/system/v2relay.service"
+    runAsRoot "rm /etc/systemd/system/v2frontend.service"
     runAsRoot "rm /etc/systemd/system/v2backend.service"
 }
 
