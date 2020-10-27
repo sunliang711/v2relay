@@ -276,7 +276,7 @@ _addCron(){
 	59 23 * * * ${this}/port.sh saveDay
 	#*/20 * * * * ${this}/v2relay.sh selectBest2 >>/tmp/selectBest2.log 2>&1
 	5 * * * * ${this}/v2relay.sh selectBest2 >>/tmp/selectBest2.log 2>&1
-	*/10 * * * * ${this}/v2relay.sh check >>/tmp/selectBest2.log 2>&1
+	*/3 * * * * ${this}/v2relay.sh check >>/tmp/selectBest2.log 2>&1
 	${endCron}
 	EOF
 
