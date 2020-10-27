@@ -10,7 +10,7 @@ export PATH=$PATH:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 user="${SUDO_USER:-$(whoami)}"
 home="$(eval echo ~$user)"
 
-export TERM=dumb
+export TERM=xterm-256color
 red=$(tput setaf 1)
 green=$(tput setaf 2)
 yellow=$(tput setaf 3)
@@ -142,6 +142,11 @@ fetchSub(){
         echo "Move new config file"
         mv ${newBackendConfig} ${backendConfig}
     fi
+}
+
+editSub(){
+    cd ${this}
+    ${editor} ${subURLFile}
 }
 
 _need(){
@@ -377,7 +382,6 @@ logb(){
 }
 
 em(){
-    TERM=
     $editor ${BASH_SOURCE}
 }
 
