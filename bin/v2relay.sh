@@ -377,6 +377,7 @@ logb(){
 }
 
 em(){
+    TERM=
     $editor ${BASH_SOURCE}
 }
 
