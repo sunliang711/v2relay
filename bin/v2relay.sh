@@ -125,7 +125,7 @@ backendConfig=${this}/../etc/backend.json
 newBackendConfig=/tmp/newbackend.json
 subURLFile=${this}/../etc/sub.txt
 backends=${this}/../etc/backends
-filterList="w:VIP2;b:游戏"
+filterList="w:VIP2|b:游戏"
 # filterList="b:游戏"
 fetchSub(){
     cd ${this}
@@ -137,9 +137,9 @@ fetchSub(){
         if [ ! -d ${backends} ];then
             mkdir -p ${backends}
         fi
-        echo "Backup old config file"
+        echo "Backup old config file ${backendConfig} to ${backends}/"
         mv ${backendConfig} ${backends}/backend-$(date +%FT%T).json
-        echo "Move new config file"
+        echo "Move new config file: ${newBackendConfig} to ${backendConfig}"
         mv ${newBackendConfig} ${backendConfig}
     fi
 }
