@@ -56,6 +56,13 @@ function runAsRoot(){
 ###############################################################################
 # TODO
 install(){
+    ##TODO enableSudo for cron
+    runAsRoot "./enableSudo.sh enable ${user}"
+
+    if [ $? -ne 0 ];then
+        echo "Enable sudo failed.exit!"
+        exit 1
+    fi
 
     if [ ! -e /usr/bin/time ];then
         echo "need /usr/bin/time"
