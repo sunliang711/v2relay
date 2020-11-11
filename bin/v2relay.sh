@@ -255,7 +255,7 @@ selectBest2(){
 check(){
     echo -n "$(date +%FT%T) check..."
     local outPort=$(_virtualPort)
-    if curl -s -x socks5://localhost:${outPort} ifconfig.me >/dev/null 2>&1;then
+    if curl -s -x socks5://localhost:${outPort} --retry 2 ifconfig.me >/dev/null 2>&1;then
         echo "OK"
     else
         echo
