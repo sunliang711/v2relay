@@ -25,14 +25,15 @@ if [ ! -d "$downloadDir" ];then
 fi
 cd "$downloadDir"
 
+version=4.32.1
 case $(uname) in
     Darwin)
-        url="https://source711.oss-cn-shanghai.aliyuncs.com/v2ray/4.25.0/MacOS/v2ray-macos.zip"
+        url="https://source711.oss-cn-shanghai.aliyuncs.com/v2ray/${version}/MacOS/v2ray-macos.zip"
         zipfile=${url##*/}
         dest=$root/Darwin
         ;;
     Linux)
-        url="https://source711.oss-cn-shanghai.aliyuncs.com/v2ray/4.25.0/Linux/v2ray-linux-64.zip"
+        url="https://source711.oss-cn-shanghai.aliyuncs.com/v2ray/${version}/Linux/v2ray-linux-64.zip"
         zipfile=${url##*/}
         dest=$root/Linux
         ;;
