@@ -274,14 +274,21 @@ _addCron(){
     fi
     cat<<-EOF>${tmpCron}
 	${beginCron}
-	#NOTE!! saveHour saveDay need run iptables with sudo,
-	#so make sure you can run iptables with sudo no passwd
-	#or you are root
+	# NOTE!! saveHour saveDay need run iptables with sudo,
+	# so make sure you can run iptables with sudo no passwd
+	# or you are root
 	0 * * * * ${this}/port.sh saveHour
 	59 23 * * * ${this}/port.sh saveDay
-	#*/20 * * * * ${this}/v2relay.sh selectBest2 >>/tmp/selectBest2.log 2>&1
-	5 * * * * ${this}/v2relay.sh selectBest2 >>/tmp/selectBest2.log 2>&1
-	*/3 * * * * ${this}/v2relay.sh check >>/tmp/selectBest2.log 2>&1
+	# */20 * * * * ${this}/v2relay.sh selectBest2 >>/tmp/selectBest2.log 2>&1
+	# 
+	# Peek Hour: 9-23,0-2 
+	5 9-23,0-2 * * * ${this}/v2relay.sh selectBest2 >>/tmp/selectBest2.log 2>&1
+	*/3 9-23,0-2 * * * ${this}/v2relay.sh check >>/tmp/selectBest2.log 2>&1
+
+	# Not Peek Hour: 3-8
+	5 3-8 * * * ${this}/v2relay.sh selectBest2 >>/tmp/selectBest2.log 2>&1
+	0,30 3-8 * * * ${this}/v2relay.sh check >>/tmp/selectBest2.log 2>&1
+
 	${endCron}
 	EOF
 
