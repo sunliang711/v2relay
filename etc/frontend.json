@@ -52,7 +52,6 @@
             "protocol": "socks",
             "port": 8020,
             "settings": {
-                "auth": "noauth",
                 "auth": "password",
                 "accounts": [
                     {
@@ -64,6 +63,24 @@
                         "pass": "user2nopass"
                     }
                 ],
+                "userLevel": 0,
+                "ip": "0.0.0.0",
+                "udp": true
+            },
+            "sniffing": {
+                "enabled": true,
+                "destOverride": [
+                    "http",
+                    "tls"
+                ]
+            }
+        },
+        {
+            "tag": "socks5-noauth",
+            "protocol": "socks",
+            "port": 8123,
+            "settings": {
+                "auth": "noauth",
                 "userLevel": 0,
                 "ip": "0.0.0.0",
                 "udp": true

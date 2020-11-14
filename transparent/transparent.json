@@ -1,0 +1,173 @@
+{
+    "log": {
+      "loglevel": "info",
+      "access": "/tmp/transparent.log",
+      "error": "/tmp/transparent.log"
+    },
+    "inbounds": [
+        {
+            "port":12345,
+            "protocol": "dokodemo-door",
+            "settings": {
+                "network": "tcp,udp",
+                "followRedirect": true
+            },
+            "sniffing": {
+                "enabled": true,
+                "destOverride": ["http", "tls"]
+            }
+            ,"streamSettings": {
+                "sockopt": {
+                    "tproxy": "redirect" //??
+                }
+            }
+
+        },
+      {
+        "BEGIN socks":"",
+        "protocol": "socks",
+        "port": 1080,
+        "settings": {
+          // "auth": "noauth"
+        },
+        "sniffing": {
+          "enabled": true,
+          "destOverride": [
+            "http",
+            "tls"
+          ]
+        },
+        "END socks":""
+      },
+      {
+          "BEGIN http":"",
+          "protocol":"http",
+          "port":8118,
+          "settings":{
+              "timeout":0,
+              "userLevel":0,
+              "allowTransparent":false
+          },
+          "sniffing":{
+              "enabled":true,
+              "destOverride":[
+                  "http",
+                  "tls"
+              ]
+          },
+          "END http":""
+      }
+
+    ],
+    "outbounds": [
+      {
+          "tag": "proxy",
+          "protocol":"socks",
+          "settings":{
+              "auth":"noauth",
+              "servers": [
+                  {
+                    "address": "localhost",
+                    "port": 8123
+                  }
+                ]
+          },
+          "streamSettings": {
+            "sockopt": {
+                "mark": 255
+            }
+          }
+      },
+      {
+        "tag": "directIp",
+        "protocol": "freedom",
+        "settings": {
+        },
+        "streamSettings": {
+            "sockopt": {
+                "mark": 255
+            }
+        }
+      },
+      {
+        "tag": "adblock",
+        "protocol": "blackhole",
+        "settings": {
+        },
+        "streamSettings": {
+            "sockopt": {
+                "mark": 255
+            }
+        }
+      },
+      {
+          "tag":"directSite",
+          "protocol":"freedom",
+          "settings":{},
+          "streamSettings": {
+            "sockopt": {
+                "mark": 255
+            }
+          }
+      }
+    ],
+    // "dns":{
+    //     "servers":[
+    //         "8.8.8.8",
+    //         "1.1.1.1",
+    //         "114.114.114.114",
+    //         {
+    //             "address":"223.5.5.5",
+    //             "port":53,
+    //             "domains":[
+    //                 "geosite:cn"
+    //             ]
+
+    //         }
+    //     ]
+    // },
+    "routing": {
+      "domainStrategy": "IPOnDemand",
+      "rules": [
+        {
+            "type":"field",
+            "outboundTag":"proxy",
+            "ip":[
+                "8.8.8.8",
+                "1.1.1.1"
+            ]
+        },
+        {
+            "type":"field",
+            "outboundTag":"proxy",
+            "domain":[
+                "google.com"
+            ]
+        },
+        {
+          "type": "field",
+          "outboundTag": "directIp",
+          "ip":[
+              "geoip:cn",
+              "geoip:private"
+          ]
+        },
+        {
+          "type": "field",
+          "outboundTag": "directSite",
+          "domain": [
+            "baidu.com",
+            "geosite:cn"
+          ]
+        },
+        {
+          "type": "field",
+          "outboundTag": "adblock",
+          "domain": [
+              "ad-website.com"
+          ]
+        }
+      ]
+    }
+  }
+
