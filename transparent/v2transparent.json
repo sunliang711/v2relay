@@ -121,6 +121,7 @@
           "type": "field",
           "outboundTag": "directSite",
           "domain": [
+            // "geosite:speedtest",
             "baidu.com",
             "geosite:cn"
           ]
