@@ -108,6 +108,10 @@ stop(){
     _runAsRoot "systemctl stop v2transparent"
 }
 
+restart(){
+    stop
+    start
+}
 
 log(){
     cd ${this}
