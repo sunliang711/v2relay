@@ -84,8 +84,10 @@ _root(){
 
 start(){
     # _checkVirtualPort
-    _runAsRoot "systemctl start $serviceName"
-    _runAsRoot "systemctl start ${backendName}"
+    _runAsRoot "systemctl start $serviceName &"
+    _runAsRoot "systemctl start ${backendName} &"
+
+    _runAsRoot "journalctl -u ${backendName} -f"
     # selectBest
     # _addCron
 }
