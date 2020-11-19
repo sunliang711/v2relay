@@ -381,7 +381,7 @@ config(){
 }
 
 log(){
-    _runAsRoot "tail -f /tmp/v2relay.log"
+    _runAsRoot "tail -f /tmp/v2ray-frontend.log"
 }
 
 logb(){

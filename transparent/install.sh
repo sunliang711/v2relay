@@ -3,8 +3,9 @@ rpath="$(readlink ${BASH_SOURCE})"
 if [ -z "$rpath" ];then
     rpath=${BASH_SOURCE}
 fi
+pwd=${PWD}
 this="$(cd $(dirname $rpath) && pwd)"
-cd "$this"
+# cd "$this"
 export PATH=$PATH:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
 user="${SUDO_USER:-$(whoami)}"
@@ -38,38 +39,22 @@ _err(){
     echo "$*" >&2
 }
 
-function _runAsRoot(){
-    verbose=0
-    while getopts ":v" opt;do
-        case "$opt" in
-            v)
-                verbose=1
-                ;;
-            \?)
-                echo "Unknown option: \"$OPTARG\""
-                exit 1
-                ;;
-        esac
-    done
-    shift $((OPTIND-1))
-    cmd="$@"
-    if [ -z "$cmd" ];then
-        echo "${red}Need cmd${reset}"
-        exit 1
-    fi
-
-    if [ "$verbose" -eq 1 ];then
-        echo "run cmd:\"${red}$cmd${reset}\" as root."
-    fi
-
-    if (($EUID==0));then
-        sh -c "$cmd"
-    else
-        if ! command -v sudo >/dev/null 2>&1;then
-            echo "Need sudo cmd"
-            exit 1
+_runAsRoot(){
+    cmd="${*}"
+    local rootID=0
+    if [ "${EUID}" -ne "${rootID}" ];then
+        echo -n "Not root, try to run as root.."
+        # or sudo sh -c ${cmd} ?
+        if eval "sudo ${cmd}";then
+            echo "ok"
+            return 0
+        else
+            echo "failed"
+            return 1
         fi
-        sudo sh -c "$cmd"
+    else
+        # or sh -c ${cmd} ?
+        eval "${cmd}"
     fi
 }
 
@@ -81,92 +66,48 @@ function _root(){
     fi
 }
 
-editor=vi
+ed=vi
 if command -v vim >/dev/null 2>&1;then
-    editor=vim
+    ed=vim
 fi
 if command -v nvim >/dev/null 2>&1;then
-    editor=nvim
+    ed=nvim
+fi
+if [ -n "${editor}" ];then
+    ed=${editor}
 fi
 ###############################################################################
 # write your code below (just define function[s])
 # function is hidden when begin with '_'
 ###############################################################################
 # TODO
+serviceName=v2transparent
+install(){
+    v2ray_path=${1:?'missing v2ray binary full path'}
+    if [ ! -e ${v2ray_path} ];then
+        echo "v2ray path not exist." >&2
+        exit 1
+    fi
+    cd ${this}
+    sed -e "s|START_CMD|${v2ray_path} -c v2transparent.json|g" \
+        -e "s|PWD|${this}|g" \
+        -e "s|START_POST|${this}/bin/v2transparent.sh _set|g" \
+        -e "s|STOP_POST|${this}/bin/v2transparent.sh _clear|g" \
+        ./v2transparent.service > /tmp/${serviceName}.service
 
-mark=255
-dekodemoPort=12345
-start(){
-    _set
-    ../Linux/v2ray -c ./transparent.json
+    _runAsRoot "mv /tmp/v2transparent.service /etc/systemd/system"
+    _runAsRoot "systemctl daemon-reload"
+    echo "v2transparent.sh has been installed to ${this}/bin"
 }
 
-log(){
-    tail -f /tmp/transparent.log
-}
-
-_set(){
-    _root
-    if command -v iptables >/dev/null 2>&1;then
-        local iptables="iptables"
-    fi
-    if command -v iptables-legacy >/dev/null 2>&1;then
-        local iptables="iptables-legacy"
-    fi
-    echo "Found ${iptables}"
-    if [ -z "${iptables}" ];then
-        _err "Not find iptables command."
-        return 1
-    fi
-
-    local tableName=V2RAY
-    ${iptables} -t nat -N ${tableName}
-    # Ignore your V2Ray outbound traffic
-    # It's very IMPORTANT, just be careful.
-    local markHex="$(printf "0x%x" ${mark})"
-    ${iptables} -t nat -A ${tableName} -p tcp -j RETURN -m mark --mark ${markHex}
-    # Ignore LANs and any other addresses you'd like to bypass the proxy
-    # See Wikipedia and RFC5735 for full list of reserved networks.
-    ${iptables} -t nat -A ${tableName} -d 0.0.0.0/8 -j RETURN
-    ${iptables} -t nat -A ${tableName} -d 10.0.0.0/8 -j RETURN
-    ${iptables} -t nat -A ${tableName} -d 127.0.0.0/8 -j RETURN
-    ${iptables} -t nat -A ${tableName} -d 169.254.0.0/16 -j RETURN
-    ${iptables} -t nat -A ${tableName} -d 172.16.0.0/12 -j RETURN
-    ${iptables} -t nat -A ${tableName} -d 192.168.0.0/16 -j RETURN
-    ${iptables} -t nat -A ${tableName} -d 224.0.0.0/4 -j RETURN
-    ${iptables} -t nat -A ${tableName} -d 240.0.0.0/4 -j RETURN
-    # Anything else should be redirected to Dokodemo-door's local port
-    ${iptables} -t nat -A ${tableName} -p tcp -j REDIRECT --to-ports ${dekodemoPort}
-
-    # apply redirect for traffic forworded by this proxy
-    ${iptables} -t nat -A PREROUTING  -p tcp -j ${tableName}
-    # apply redirect for proxy itself
-    ${iptables} -t nat -A OUTPUT -p tcp -j ${tableName}
-}
-
-_clear(){
-    _root
-    if command -v iptables >/dev/null 2>&1;then
-        local iptables="iptables"
-    fi
-    if command -v iptables-legacy >/dev/null 2>&1;then
-        local iptables="iptables-legacy"
-    fi
-    echo "Found ${iptables}"
-    if [ -z "${iptables}" ];then
-        _err "Not find iptables command."
-        return 1
-    fi
-
-    local tableName=V2RAY
-    ${iptables} -t nat -D PREROUTING -p tcp -j ${tableName}
-    ${iptables} -t nat -D OUTPUT -p tcp -j ${tableName}
-
+uninstall(){
+    _runAsRoot "systemctl stop ${serviceName}"
+    _runAsRoot "/bin/rm -f /etc/systemd/system/${serviceName}"
 
 }
 
 em(){
-    $editor $0
+    $ed $0
 }
 
 ###############################################################################

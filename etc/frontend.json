@@ -78,7 +78,9 @@
         {
             "tag": "socks5-noauth",
             "protocol": "socks",
+            // BEGIN transparent
             "port": 8123,
+            // END transparent
             "settings": {
                 "auth": "noauth",
                 "userLevel": 0,

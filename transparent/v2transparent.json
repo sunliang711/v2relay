@@ -1,8 +1,8 @@
 {
     "log": {
       "loglevel": "info",
-      "access": "/tmp/transparent.log",
-      "error": "/tmp/transparent.log"
+      "access": "/tmp/v2transparent.log",
+      "error": "/tmp/v2transparent.log"
     },
     "inbounds": [
         {
@@ -22,42 +22,7 @@
                 }
             }
 
-        },
-      {
-        "BEGIN socks":"",
-        "protocol": "socks",
-        "port": 1080,
-        "settings": {
-          // "auth": "noauth"
-        },
-        "sniffing": {
-          "enabled": true,
-          "destOverride": [
-            "http",
-            "tls"
-          ]
-        },
-        "END socks":""
-      },
-      {
-          "BEGIN http":"",
-          "protocol":"http",
-          "port":8118,
-          "settings":{
-              "timeout":0,
-              "userLevel":0,
-              "allowTransparent":false
-          },
-          "sniffing":{
-              "enabled":true,
-              "destOverride":[
-                  "http",
-                  "tls"
-              ]
-          },
-          "END http":""
-      }
-
+        }
     ],
     "outbounds": [
       {
