@@ -96,6 +96,7 @@ fi
 
 mark=255
 dekodemoPort=12345
+tableName=V2_TRANSPARENT
 
 start(){
     # _set
@@ -119,6 +120,7 @@ log(){
     _runAsRoot "tail -f ${accessFile}"
 }
 
+
 _set(){
     _root
     if command -v iptables >/dev/null 2>&1;then
@@ -133,7 +135,10 @@ _set(){
         return 1
     fi
 
-    local tableName=V2RAY
+    if ! ${iptables} -t nat -L | grep -q "Chain ${v2transparent}";then
+        echo "Already exist,skip." >&2
+        return 0
+    fi
     ${iptables} -t nat -N ${tableName}
     # Ignore your V2Ray outbound traffic
     # It's very IMPORTANT, just be careful.
@@ -172,7 +177,6 @@ _clear(){
         return 1
     fi
 
-    local tableName=V2RAY
     ${iptables} -t nat -D PREROUTING -p tcp -j ${tableName}
     ${iptables} -t nat -D OUTPUT -p tcp -j ${tableName}
     ${iptables} -t nat -F ${tableName}
