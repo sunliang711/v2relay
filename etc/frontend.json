@@ -76,10 +76,27 @@
             }
         },
         {
+            "tag": "http",
+            "protocol": "http",
+            "port": 8031,
+            "settings": {
+                "timeout": 0,
+                "userLevel": 0,
+                "allowTransparent": false
+            },
+            "sniffing": {
+                "enabled": true,
+                "destOverride": [
+                    "http",
+                    "tls"
+                ]
+            }
+        },
+        {
             "tag": "socks5-noauth",
             "protocol": "socks",
             // BEGIN transparent
-            "port": 8123,
+            "port": 8030,
             // END transparent
             "settings": {
                 "auth": "noauth",
