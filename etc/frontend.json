@@ -52,6 +52,7 @@
             "protocol": "socks",
             "port": 8020,
             "settings": {
+                "udp": true,
                 "auth": "password",
                 "accounts": [
                     {
@@ -99,6 +100,7 @@
             "port": 8030,
             // END transparent
             "settings": {
+                "udp": true,
                 "auth": "noauth",
                 "userLevel": 0,
                 "ip": "0.0.0.0",
