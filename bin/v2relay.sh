@@ -139,8 +139,10 @@ fetchSub(){
         if [ ! -d ${backends} ];then
             mkdir -p ${backends}
         fi
-        echo "Backup old config file ${backendConfig} to ${backends}/"
-        mv ${backendConfig} ${backends}/backend-$(date +%FT%T).json
+        if [ -e ${backendConfig} ];then
+            echo "Backup old config file ${backendConfig} to ${backends}/"
+            mv ${backendConfig} ${backends}/backend-$(date +%FT%T).json
+        fi
         echo "Move new config file: ${newBackendConfig} to ${backendConfig}"
         mv ${newBackendConfig} ${backendConfig}
     fi

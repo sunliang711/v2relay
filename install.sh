@@ -14,40 +14,33 @@ green=$(tput setaf 2)
 yellow=$(tput setaf 3)
 blue=$(tput setaf 4)
 cyan=$(tput setaf 5)
-        bold=$(tput bold)
+bold=$(tput bold)
 reset=$(tput sgr0)
-function runAsRoot(){
-    verbose=0
-    while getopts ":v" opt;do
-        case "$opt" in
-            v)
-                verbose=1
-                ;;
-            \?)
-                echo "Unknown option: \"$OPTARG\""
-                exit 1
-                ;;
-        esac
-    done
-    shift $((OPTIND-1))
-    cmd="$@"
-    if [ -z "$cmd" ];then
-        echo "${red}Need cmd${reset}"
-        exit 1
-    fi
 
-    if [ "$verbose" -eq 1 ];then
-        echo "run cmd:\"${red}$cmd${reset}\" as root."
-    fi
-
-    if (($EUID==0));then
-        sh -c "$cmd"
-    else
-        if ! command -v sudo >/dev/null 2>&1;then
-            echo "Need sudo cmd"
-            exit 1
+_runAsRoot(){
+    cmd="${*}"
+    local rootID=0
+    if [ "${EUID}" -ne "${rootID}" ];then
+        echo -n "Not root, try to run as root.."
+        # or sudo sh -c ${cmd} ?
+        if eval "sudo ${cmd}";then
+            echo "ok"
+            return 0
+        else
+            echo "failed"
+            return 1
         fi
-        sudo sh -c "$cmd"
+    else
+        # or sh -c ${cmd} ?
+        eval "${cmd}"
+    fi
+}
+
+rootID=0
+function _root(){
+    if [ ${EUID} -ne ${rootID} ];then
+        echo "Need run as root!"
+        exit 1
     fi
 }
 ###############################################################################
@@ -57,7 +50,7 @@ function runAsRoot(){
 # TODO
 install(){
     ##TODO enableSudo for cron
-    runAsRoot "./enableSudo.sh enable ${user}"
+    _runAsRoot "./enableSudo.sh enable ${user}"
 
     if [ $? -ne 0 ];then
         echo "Enable sudo failed.exit!"
@@ -66,7 +59,7 @@ install(){
 
     if [ ! -e /usr/bin/time ];then
         echo "need /usr/bin/time"
-        runAsRoot "apt install time -y" || { echo " install time error!"; exit 1; }
+        _runAsRoot "apt install time -y" || { echo " install time error!"; exit 1; }
     fi
     _build
     # msg is made by 'figlet'
@@ -77,8 +70,8 @@ install(){
         -e "s|USER|${user}|g" \
         -e "s|PRE|${this}/bin/port.sh addChain|g"  daemon/v2frontend.service > /tmp/v2frontend.service
 
-    runAsRoot "mv /tmp/v2frontend.service /etc/systemd/system/v2frontend.service"
-    runAsRoot "systemctl enable v2frontend"
+    _runAsRoot "mv /tmp/v2frontend.service /etc/systemd/system/v2frontend.service"
+    _runAsRoot "systemctl enable v2frontend"
     echo "systemd service v2frontend has been installed."
 
     sed -e "s|V2RAY|${this}/Linux/v2ray|g" \
@@ -87,8 +80,8 @@ install(){
         -e "s|START_PRE|${this}/bin/v2relay.sh start_pre|g" \
         -e "s|START_POST|${this}/bin/v2relay.sh start_post|g" \
         -e "s|STOP_POST|${this}/bin/v2relay.sh stop_post|g"  daemon/v2backend.service > /tmp/v2backend.service
-    runAsRoot "mv /tmp/v2backend.service /etc/systemd/system/v2backend.service"
-    runAsRoot "systemctl enable v2backend"
+    _runAsRoot "mv /tmp/v2backend.service /etc/systemd/system/v2backend.service"
+    _runAsRoot "systemctl enable v2backend"
     echo "systemd service v2backend has been installed."
 
     echo "Note: in crontab please enable no password to run sudo if you are not root"
@@ -114,8 +107,8 @@ uninstall(){
     ./bin/v2relay.sh stop
     rm ./bin/fetch 2>/dev/null
     rm ./bin/v2ray.tmpl 2>/dev/null
-    runAsRoot "rm /etc/systemd/system/v2frontend.service"
-    runAsRoot "rm /etc/systemd/system/v2backend.service"
+    _runAsRoot "rm /etc/systemd/system/v2frontend.service"
+    _runAsRoot "rm /etc/systemd/system/v2backend.service"
 }
 
 ###############################################################################
