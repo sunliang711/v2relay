@@ -101,7 +101,8 @@ install(){
 
     # enable ipv4 forward
     if ! grep -q '^net.ipv4.ip_forward=1' /etc/sysctl.conf;then
-        _runAsRoot "echo 'net.ipv4.ip_forward=1' >> /etc/sysctl.conf"
+        (cat /etc/sysctl.conf ;echo 'net.ipv4.ip_forward=1') >/tmp/ipforward
+        _runAsRoot "mv /tmp/ipforward /etc/sysctl.conf"
     fi
 }
 
