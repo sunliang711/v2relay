@@ -98,6 +98,11 @@ install(){
     _runAsRoot "mv /tmp/v2transparent.service /etc/systemd/system"
     _runAsRoot "systemctl daemon-reload"
     echo "v2transparent.sh has been installed to ${this}/bin"
+
+    # enable ipv4 forward
+    if ! grep -q '^net.ipv4.ip_forward=1' /etc/sysctl.conf;then
+        _runAsRoot "echo 'net.ipv4.ip_forward=1' >> /etc/sysctl.conf"
+    fi
 }
 
 uninstall(){

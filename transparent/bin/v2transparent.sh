@@ -123,7 +123,7 @@ log(){
 
 _set(){
     _root
-    sysctl -w net.ipv4.ip_forward=1
+    # sysctl -w net.ipv4.ip_forward=1
     if command -v iptables >/dev/null 2>&1;then
         local iptables="iptables"
     fi
@@ -166,7 +166,7 @@ _set(){
 
 _clear(){
     _root
-    sysctl -w net.ipv4.ip_forward=0
+    # sysctl -w net.ipv4.ip_forward=0
     if command -v iptables >/dev/null 2>&1;then
         local iptables="iptables"
     fi
