@@ -72,7 +72,7 @@ fi
 if command -v iptables-legacy >/dev/null 2>&1;then
     firewallCMD="iptables-legacy"
 fi
-serviceName=v2frontend
+frontendName=v2frontend
 backendName=v2backend
 rootid=0
 _root(){
@@ -84,7 +84,7 @@ _root(){
 
 start(){
     # _checkVirtualPort
-    _runAsRoot "systemctl start $serviceName &"
+    _runAsRoot "systemctl start $frontendName &"
     _runAsRoot "systemctl start ${backendName} &"
 
     _runAsRoot "journalctl -u ${backendName} -f"
@@ -103,7 +103,7 @@ start_post(){
 
 
 stop(){
-    _runAsRoot "systemctl stop $serviceName"
+    _runAsRoot "systemctl stop $frontendName"
     _runAsRoot "systemctl stop ${backendName}"
     # _clearRule
     # _delCron
@@ -120,7 +120,7 @@ restart(){
 }
 
 status(){
-    _runAsRoot "systemctl status $serviceName"
+    _runAsRoot "systemctl status $frontendName"
 }
 
 backendConfig=${this}/../etc/backend.json

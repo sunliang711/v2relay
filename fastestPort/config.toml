@@ -5,7 +5,8 @@ maxCocurrent=5
 #unit: ms
 timeout=9000
 
-targetURL="http://ifconfig.me"
+# targetURL="http://ifconfig.me"
+targetURL="https://raw.githubusercontent.com/sunliang711/fastest/master/10m"
 
 #resultFile: output
 resultFile="/tmp/fastestPort.result"
