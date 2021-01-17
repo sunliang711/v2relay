@@ -69,11 +69,17 @@ firewallCMD=
 if command -v iptables >/dev/null 2>&1;then
     firewallCMD=iptables
 fi
-if command -v iptables-legacy >/dev/null 2>&1;then
-    firewallCMD="iptables-legacy"
-fi
+# if command -v iptables-legacy >/dev/null 2>&1;then
+#     firewallCMD="iptables-legacy"
+# fi
 frontendName=v2frontend
 backendName=v2backend
+backendConfig=${this}/../etc/backend.json
+newBackendConfig=/tmp/newbackend.json
+subURLFile=${this}/../etc/sub.txt
+backends=${this}/../etc/backends
+filterList="w:VIP2|b:游戏"
+# filterList="b:游戏"
 rootid=0
 _root(){
     if [ $EUID -ne $rootid ];then
@@ -94,11 +100,16 @@ start(){
 
 start_pre(){
     _checkVirtualPort
+    _outboundAddress
 }
 
 start_post(){
     selectBest2
     _addCron
+}
+
+_outboundAddress(){
+    grep 'BEGIN outbound address:' ${backendConfig} | awk -F':' '{print $2}' | sort | uniq > /tmp/outboundAddress
 }
 
 
@@ -123,12 +134,6 @@ status(){
     _runAsRoot "systemctl status $frontendName"
 }
 
-backendConfig=${this}/../etc/backend.json
-newBackendConfig=/tmp/newbackend.json
-subURLFile=${this}/../etc/sub.txt
-backends=${this}/../etc/backends
-filterList="w:VIP2|b:游戏"
-# filterList="b:游戏"
 fetchSub(){
     cd ${this}
     local subURL="$(cat ${subURLFile})"
