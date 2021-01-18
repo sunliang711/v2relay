@@ -78,6 +78,7 @@ function init(){
         echo "iptables command not found!"
         exit 1
     fi
+    cmdIptbl=iptables
 }
 
 list(){
