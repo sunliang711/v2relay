@@ -158,6 +158,10 @@ editSub(){
     ${editor} ${subURLFile}
 }
 
+exportSub(){
+    cat ${subURLFile}
+}
+
 _need(){
     if ! command -v $1 >/dev/null 2>&1;then
         echo "need $1"
